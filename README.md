@@ -10,6 +10,7 @@
 8.添加可控子码流变量  
 9.多路播放支持  
   
+### 在releases中有APK可以下载： [点击跳转](https://github.com/yutils/HikVisionDemo/releases)
 # 界面截图
 
 ![PS03](doc/1.png)  
