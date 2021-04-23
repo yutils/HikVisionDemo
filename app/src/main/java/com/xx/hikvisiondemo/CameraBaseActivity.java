@@ -51,8 +51,9 @@ import static com.hikvision.netsdk.PTZPresetCmd.SET_PRESET;
  * @author zhuzhenlei
  * @version V1.0
  * @modificationHistory
+ * @author yujing 2021年4月23日09:50:43
  */
-public class CameraBaseActivity extends Activity implements Callback, OnTouchListener{
+public class CameraBaseActivity extends Activity implements Callback, OnTouchListener {
     private SurfaceView m_osurfaceView = null;
     private NET_DVR_DEVICEINFO_V30 m_oNetDvrDeviceInfoV30 = null;
     private int m_iLogID = -1; // return by NET_DVR_Login_v30
@@ -75,10 +76,11 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
     private CameraManager h1;
     private AppData app;
 
-    public final String ADDRESS = "192.168.1.64";
+    public final String ADDRESS = "192.168.1.65";
     public final int PORT = 8000;
     public final String USER = "admin";
-    public final String PSD = "admin123";
+    public final String PSD = "pw&123456";
+    public final int subStream = 1;//0 主码流，1子码流, 2三码流
 
     /**
      * Called when the activity is first created.
@@ -123,7 +125,7 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
         //预览
         final NET_DVR_PREVIEWINFO ClientInfo = new NET_DVR_PREVIEWINFO();
         ClientInfo.lChannel = 0;
-        ClientInfo.dwStreamType = 0; // substream
+        ClientInfo.dwStreamType = subStream; // 主码流，子码流
         ClientInfo.bBlocked = 1;
         //设置默认点
         thread = new Thread(new Runnable() {
@@ -322,6 +324,7 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
         }
         stopSinglePreview();
     }
+
     private void startSinglePreview() {
         if (m_iPlaybackID >= 0) {
             Log.i(TAG, "Please stop palyback first");
@@ -336,7 +339,7 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
 
         NET_DVR_PREVIEWINFO previewInfo = new NET_DVR_PREVIEWINFO();
         previewInfo.lChannel = m_iStartChan;
-        previewInfo.dwStreamType = 0; // substream
+        previewInfo.dwStreamType = subStream; // subStream
         previewInfo.bBlocked = 1;
 //
         m_iPlayID = HCNetSDK.getInstance().NET_DVR_RealPlay_V40(m_iLogID,
@@ -359,6 +362,7 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
                     point);
         }
     }
+
     /**
      * @return NULL
      * @fn stopSinglePreview
