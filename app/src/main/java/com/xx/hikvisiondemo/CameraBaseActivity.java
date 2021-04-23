@@ -1,12 +1,3 @@
-/**
- * <p>DemoActivity Class</p>
- *
- * @author zhuzhenlei 2014-7-17
- * @version V1.0
- * @modificationHistory
- * @modify by user:
- * @modify by reason:
- */
 package com.xx.hikvisiondemo;
 
 import android.app.Activity;
@@ -14,7 +5,7 @@ import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.v7.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -111,10 +102,6 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
         }
         // get instance of exception callback and set
         ExceptionCallBack oexceptionCbf = getExceptiongCbf();
-        if (oexceptionCbf == null) {
-            Log.e(TAG, "ExceptionCallBack object is failed!");
-            return;
-        }
 
         if (!HCNetSDK.getInstance().NET_DVR_SetExceptionCallBack(
                 oexceptionCbf)) {
@@ -128,19 +115,13 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
         ClientInfo.dwStreamType = subStream; // 主码流，子码流
         ClientInfo.bBlocked = 1;
         //设置默认点
-        thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (!Thread.currentThread().isInterrupted()) {
-                    SystemClock.sleep(1000);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (isShow)
-                                startSinglePreview();
-                        }
-                    });
-                }
+        thread = new Thread(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                SystemClock.sleep(1000);
+                runOnUiThread(() -> {
+                    if (isShow)
+                        startSinglePreview();
+                });
             }
         });
         thread.start();
@@ -219,19 +200,19 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
     // get controller instance
     private void findViews() {
 
-        this.btnZoomOut = (Button) findViewById(R.id.btn_ZoomOut);
-        this.btnZoomIn = (Button) findViewById(R.id.btn_ZoomIn);
-        this.btnRight = (Button) findViewById(R.id.btn_Right);
-        this.btnLeft = (Button) findViewById(R.id.btn_Left);
-        this.btnDown = (Button) findViewById(R.id.btn_Down);
-        this.btnUp = (Button) findViewById(R.id.btn_Up);
+        this.btnZoomOut = findViewById(R.id.btn_ZoomOut);
+        this.btnZoomIn = findViewById(R.id.btn_ZoomIn);
+        this.btnRight = findViewById(R.id.btn_Right);
+        this.btnLeft = findViewById(R.id.btn_Left);
+        this.btnDown = findViewById(R.id.btn_Down);
+        this.btnUp = findViewById(R.id.btn_Up);
         btnUp.setOnTouchListener(this);
         btnDown.setOnTouchListener(this);
         btnLeft.setOnTouchListener(this);
         btnRight.setOnTouchListener(this);
         btnZoomIn.setOnTouchListener(this);
         btnZoomOut.setOnTouchListener(this);
-        this.m_osurfaceView = (SurfaceView) findViewById(R.id.sf_VideoMonitor);
+        this.m_osurfaceView = findViewById(R.id.sf_VideoMonitor);
 
     }
 
@@ -331,10 +312,6 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
             return;
         }
         RealPlayCallBack fRealDataCallBack = getRealPlayerCbf();
-        if (fRealDataCallBack == null) {
-            Log.e(TAG, "fRealDataCallBack object is failed!");
-            return;
-        }
         Log.i(TAG, "m_iStartChan:" + m_iStartChan);
 
         NET_DVR_PREVIEWINFO previewInfo = new NET_DVR_PREVIEWINFO();
@@ -413,10 +390,6 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
     private int loginNormalDevice() {
         // get instance
         m_oNetDvrDeviceInfoV30 = new NET_DVR_DEVICEINFO_V30();
-        if (null == m_oNetDvrDeviceInfoV30) {
-            Log.e(TAG, "HKNetDvrDeviceInfoV30 new is failed!");
-            return -1;
-        }
         // call NET_DVR_Login_v30 to login on, port 8000 as default
         int iLogID = HCNetSDK.getInstance().NET_DVR_Login_V30(ADDRESS, PORT,
                 USER, PSD, m_oNetDvrDeviceInfoV30);
@@ -454,11 +427,7 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
      * @fn getExceptiongCbf
      */
     private ExceptionCallBack getExceptiongCbf() {
-        ExceptionCallBack oExceptionCbf = new ExceptionCallBack() {
-            public void fExceptionCallBack(int iType, int iUserID, int iHandle) {
-                System.out.println("recv exception, type:" + iType);
-            }
-        };
+        ExceptionCallBack oExceptionCbf = (iType, iUserID, iHandle) -> System.out.println("recv exception, type:" + iType);
         return oExceptionCbf;
     }
 
@@ -468,13 +437,10 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
      * @brief get realplay callback instance
      */
     private RealPlayCallBack getRealPlayerCbf() {
-        RealPlayCallBack cbf = new RealPlayCallBack() {
-            public void fRealDataCallBack(int iRealHandle, int iDataType,
-                                          byte[] pDataBuffer, int iDataSize) {
-                // player channel 1
-                CameraBaseActivity.this.processRealData(iDataType, pDataBuffer,
-                        iDataSize, Player.STREAM_REALTIME);
-            }
+        RealPlayCallBack cbf = (iRealHandle, iDataType, pDataBuffer, iDataSize) -> {
+            // player channel 1
+            CameraBaseActivity.this.processRealData(iDataType, pDataBuffer,
+                    iDataSize, Player.STREAM_REALTIME);
         };
         return cbf;
     }
@@ -578,74 +544,65 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
 
     public void SetOnclick(View view) {
         View linearLayout = getLayoutInflater().inflate(R.layout.setting_page, null);
-        Button button2 = (Button) linearLayout.findViewById(R.id.button2);
-        Button button1 = (Button) linearLayout.findViewById(R.id.button1);
-        Button button = (Button) linearLayout.findViewById(R.id.button);
+        Button button2 = linearLayout.findViewById(R.id.button2);
+        Button button1 = linearLayout.findViewById(R.id.button1);
+        Button button = linearLayout.findViewById(R.id.button);
         //设置预置点
-        final EditText editText = (EditText) linearLayout.findViewById(R.id.editText);
+        final EditText editText = linearLayout.findViewById(R.id.editText);
         final AlertDialog dialog = getDialongView(linearLayout);
         //设置预置点
-        button2.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Integer integer = Integer.valueOf(editText.getText().toString());
-                if (integer > 255 || integer < 0) {
-                    Toast.makeText(CameraBaseActivity.this, "请设置0-255之间", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                boolean b = HCNetSDK.getInstance().NET_DVR_PTZPreset(m_iPlayID, SET_PRESET,
-                        integer);
-                if (b) {
-                    Toast.makeText(CameraBaseActivity.this, "设置成功", Toast.LENGTH_SHORT).show();
-                    app.editor.putInt("POINT", integer).commit();
-                } else {
-                    Toast.makeText(CameraBaseActivity.this, "设置失败", Toast.LENGTH_SHORT).show();
-                }
-                Log.d(TAG, "onClick: " + b);
+        button2.setOnClickListener(v -> {
+            Integer integer = Integer.valueOf(editText.getText().toString());
+            if (integer > 255 || integer < 0) {
+                Toast.makeText(CameraBaseActivity.this, "请设置0-255之间", Toast.LENGTH_SHORT).show();
+                return;
             }
+            boolean b = HCNetSDK.getInstance().NET_DVR_PTZPreset(m_iPlayID, SET_PRESET,
+                    integer);
+            if (b) {
+                Toast.makeText(CameraBaseActivity.this, "设置成功", Toast.LENGTH_SHORT).show();
+                app.editor.putInt("POINT", integer).commit();
+            } else {
+                Toast.makeText(CameraBaseActivity.this, "设置失败", Toast.LENGTH_SHORT).show();
+            }
+            Log.d(TAG, "onClick: " + b);
         });
         //清楚预置点
-        button1.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        button1.setOnClickListener(v -> {
 
-                Integer integer = Integer.valueOf(editText.getText().toString());
-                if (integer > 255 || integer < 0) {
-                    Toast.makeText(CameraBaseActivity.this, "请设置0-255之间", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                boolean b = HCNetSDK.getInstance().NET_DVR_PTZPreset(m_iPlayID, CLE_PRESET,
-                        integer);
-                if (b) {
-                    app.editor.remove("POINT").commit();
-                    Toast.makeText(CameraBaseActivity.this, "清除成功", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(CameraBaseActivity.this, "清除失败", Toast.LENGTH_SHORT).show();
-                }
-                Log.d(TAG, "onClick: " + b);
-                dialog.dismiss();
+            Integer integer = Integer.valueOf(editText.getText().toString());
+            if (integer > 255 || integer < 0) {
+                Toast.makeText(CameraBaseActivity.this, "请设置0-255之间", Toast.LENGTH_SHORT).show();
+                return;
             }
+            boolean b = HCNetSDK.getInstance().NET_DVR_PTZPreset(m_iPlayID, CLE_PRESET,
+                    integer);
+            if (b) {
+                app.editor.remove("POINT").commit();
+                Toast.makeText(CameraBaseActivity.this, "清除成功", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(CameraBaseActivity.this, "清除失败", Toast.LENGTH_SHORT).show();
+            }
+            Log.d(TAG, "onClick: " + b);
+            dialog.dismiss();
         });
         //转到预置点
-        button.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        button.setOnClickListener(v -> {
 
-                Integer integer = Integer.valueOf(editText.getText().toString());
-                if (integer > 255 || integer < 0) {
+            Integer integer = Integer.valueOf(editText.getText().toString());
+            if (integer > 255 || integer < 0) {
 
-                    Toast.makeText(CameraBaseActivity.this, "请设置0-255之间", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                int point = app.preferences.getInt("POINT", 0);
-                if (point == 0) {
-                    Toast.makeText(app, "请先设置预设点", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                boolean b = HCNetSDK.getInstance().NET_DVR_PTZPreset(m_iPlayID, PTZCommand.GOTO_PRESET,
-                        point);
-                Log.d(TAG, "onClick: " + b);
+                Toast.makeText(CameraBaseActivity.this, "请设置0-255之间", Toast.LENGTH_SHORT).show();
+                return;
             }
+            int point = app.preferences.getInt("POINT", 0);
+            if (point == 0) {
+                Toast.makeText(app, "请先设置预设点", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            boolean b = HCNetSDK.getInstance().NET_DVR_PTZPreset(m_iPlayID, PTZCommand.GOTO_PRESET,
+                    point);
+            Log.d(TAG, "onClick: " + b);
         });
 
 

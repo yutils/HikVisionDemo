@@ -242,13 +242,10 @@ public class CameraManager {
      * @brief get realplay callback instance
      */
     private RealPlayCallBack getRealPlayerCbf() {
-        RealPlayCallBack cbf = new RealPlayCallBack() {
-            public void fRealDataCallBack(int iRealHandle, int iDataType,
-                                          byte[] pDataBuffer, int iDataSize) {
-                // player channel 1
-                processRealData(1, iDataType, pDataBuffer,
-                        iDataSize, Player.STREAM_REALTIME);
-            }
+        RealPlayCallBack cbf = (iRealHandle, iDataType, pDataBuffer, iDataSize) -> {
+            // player channel 1
+            processRealData(1, iDataType, pDataBuffer,
+                    iDataSize, Player.STREAM_REALTIME);
         };
         return cbf;
     }
@@ -261,7 +258,6 @@ public class CameraManager {
      * @param pDataBuffer - data buffer [in]
      * @param iDataSize   - data size [in]
      * @param iStreamMode - stream mode [in]
-     * @param NULL        [out]
      * @return NULL
      * @fn processRealData
      * @author zhuzhenlei
@@ -404,23 +400,19 @@ public class CameraManager {
                         if (!Player.getInstance().setStreamOpenMode(m_iPort, iStreamMode))
                             break; //设置视频流失败！
                         // 抓图回调函数
-                        PlayerCallBack.PlayerDisplayCB displayCB = new PlayerCallBack.PlayerDisplayCB() {
-                            //就这个函数出毛病了
-                            @Override
-                            public void onDisplay(int arg0, byte[] arg1, int arg2,
-                                                  int arg3, int arg4, int arg5, int arg6, int arg7) {
-                                if (null != context) {
-                                    context.sendBroadcast(new Intent(
-                                            ACTION_START_RENDERING));
-                                } else {
-                                    Log.e(TAG,
-                                            "Context为空！没有setContext(Context context)？");
-                                }
-                                Log.d(TAG, "开始画面渲染");
-                                if (!Player.getInstance()
-                                        .setDisplayCB(m_iPort, null)) {
-                                    //移除显示回调失败！
-                                }
+                        //就这个函数出毛病了
+                        PlayerCallBack.PlayerDisplayCB displayCB = (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) -> {
+                            if (null != context) {
+                                context.sendBroadcast(new Intent(
+                                        ACTION_START_RENDERING));
+                            } else {
+                                Log.e(TAG,
+                                        "Context为空！没有setContext(Context context)？");
+                            }
+                            Log.d(TAG, "开始画面渲染");
+                            if (!Player.getInstance()
+                                    .setDisplayCB(m_iPort, null)) {
+                                //移除显示回调失败！
                             }
                         };
                         if (!Player.getInstance().setDisplayCB(m_iPort, displayCB)) {
@@ -718,7 +710,7 @@ public class CameraManager {
     }
 
     //预置点操作
-    public void setPoint(int point,int m_iPlayID) {
+    public void setPoint(int point, int m_iPlayID) {
         switch (point) {
             case 8://设置预置点
 

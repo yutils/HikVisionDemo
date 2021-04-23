@@ -66,14 +66,15 @@ public class CameraDevice {
         this.channel = channel;
     }
 
-    public CameraDevice() {}
-    public CameraDevice(String ip, String port, String userName, String passWord, String channel)
-    {
-        this.ip=ip;
-        this.port=port;
-        this.userName=userName;
-        this.passWord=passWord;
-        this.channel=channel;
+    public CameraDevice() {
+    }
+
+    public CameraDevice(String ip, String port, String userName, String passWord, String channel) {
+        this.ip = ip;
+        this.port = port;
+        this.userName = userName;
+        this.passWord = passWord;
+        this.channel = channel;
     }
 
     @Override

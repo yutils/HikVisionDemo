@@ -25,32 +25,33 @@ import java.util.Map;
  * Class: CrashUtil
  * Description:
  */
-public class CrashUtil implements Thread.UncaughtExceptionHandler
-{
+public class CrashUtil implements Thread.UncaughtExceptionHandler {
     private static final String TAG = "CrashUtil";
 
     private static final String SD_CARD_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/SimpleDemo/crash";
     private Thread.UncaughtExceptionHandler mDefaultCrashHandler;
 
-    /** 存储设备信息和异常信息 */
-    private final Map<String, String> infos = new HashMap<String, String>();
+    /**
+     * 存储设备信息和异常信息
+     */
+    private final Map<String, String> infos = new HashMap<>();
 
-    /** 格式化日期，作为日志文件名的一部分 */
+    /**
+     * 格式化日期，作为日志文件名的一部分
+     */
     private DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss", Locale.getDefault());
 
-    /** 类单例 */
+    /**
+     * 类单例
+     */
     private static CrashUtil mInstance = null;
 
     private Context mContext;
 
-    public static CrashUtil getInstance()
-    {
-        if (null == mInstance)
-        {
-            synchronized (CrashUtil.class)
-            {
-                if (null == mInstance)
-                {
+    public static CrashUtil getInstance() {
+        if (null == mInstance) {
+            synchronized (CrashUtil.class) {
+                if (null == mInstance) {
                     mInstance = new CrashUtil();
                 }
             }
@@ -58,37 +59,33 @@ public class CrashUtil implements Thread.UncaughtExceptionHandler
         return mInstance;
     }
 
-    private CrashUtil()
-    {
+    private CrashUtil() {
 
     }
 
-    public void init(Context context)
-    {
+    public void init(Context context) {
         mDefaultCrashHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(this);
         mContext = context;
     }
 
     @Override
-    public void uncaughtException (Thread thread, Throwable ex)
-    {
+    public void uncaughtException(Thread thread, Throwable ex) {
         handleException(ex);
 
-        if (mDefaultCrashHandler != null)
-        {
+        if (mDefaultCrashHandler != null) {
             // 让系统默认的处理器处理
             SystemClock.sleep(500);
             mDefaultCrashHandler.uncaughtException(thread, ex);
         }
     }
 
-    /** 自定义错误处理，收集错误信息等 */
-    private boolean handleException (Throwable ex)
-    {
+    /**
+     * 自定义错误处理，收集错误信息等
+     */
+    private boolean handleException(Throwable ex) {
         // 处理异常，可以提示用户崩溃了，或保存重要信息，尝试恢复现场，或者直接杀死进程
-        if (ex == null)
-        {
+        if (ex == null) {
             return false;
         }
 
@@ -99,15 +96,14 @@ public class CrashUtil implements Thread.UncaughtExceptionHandler
         return true;
     }
 
-    /** 收集设备信息 */
-    private void collectDeviceInfo ()
-    {
-        try
-        {
+    /**
+     * 收集设备信息
+     */
+    private void collectDeviceInfo() {
+        try {
             PackageManager pm = mContext.getPackageManager();
             PackageInfo pi = pm.getPackageInfo(mContext.getPackageName(), PackageManager.GET_ACTIVITIES);
-            if (pi != null)
-            {
+            if (pi != null) {
                 // 应用版本信息
                 infos.put("App Version", pi.versionName + '_' + pi.versionCode + "\n");
                 // Android 系统版本信息
@@ -125,9 +121,7 @@ public class CrashUtil implements Thread.UncaughtExceptionHandler
                 // 手机品牌
                 infos.put("Brand", Build.BRAND + "\n");
             }
-        }
-        catch (PackageManager.NameNotFoundException e)
-        {
+        } catch (PackageManager.NameNotFoundException e) {
             Log.e(TAG, "an error occurred when collect package info");
             e.printStackTrace();
         }
@@ -149,12 +143,12 @@ public class CrashUtil implements Thread.UncaughtExceptionHandler
 //        }
     }
 
-    /** 保存错误信息到文件中 */
-    private String saveCrashInfoToFile (Throwable ex)
-    {
-        StringBuffer sb = new StringBuffer();
-        for (Map.Entry<String, String> entry : infos.entrySet())
-        {
+    /**
+     * 保存错误信息到文件中
+     */
+    private String saveCrashInfoToFile(Throwable ex) {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> entry : infos.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
             sb.append(key);
@@ -167,8 +161,7 @@ public class CrashUtil implements Thread.UncaughtExceptionHandler
         PrintWriter printWriter = new PrintWriter(writer);
         ex.printStackTrace(printWriter);
         Throwable cause = ex.getCause();
-        while (cause != null)
-        {
+        while (cause != null) {
             cause.printStackTrace(printWriter);
             cause = cause.getCause();
         }
@@ -178,17 +171,14 @@ public class CrashUtil implements Thread.UncaughtExceptionHandler
         sb.append("\n");
         sb.append(result);
 
-        try
-        {
+        try {
             long currentTime = System.currentTimeMillis();
             String time = formatter.format(new Date(currentTime));
             String fileName = "crash_" + time + "_" + currentTime + ".log";
 
-            if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED))
-            {
+            if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
                 File dir = new File(SD_CARD_PATH);
-                if (!dir.exists())
-                {
+                if (!dir.exists()) {
                     boolean s = dir.mkdirs();
                     System.out.println(s);
                 }
@@ -199,13 +189,10 @@ public class CrashUtil implements Thread.UncaughtExceptionHandler
             }
 
             return fileName;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Log.e(TAG, "an error occurred while writing file...");
             e.printStackTrace();
         }
-
         return "";
     }
 }

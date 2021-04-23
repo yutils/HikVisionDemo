@@ -7,69 +7,39 @@ import java.util.List;
 import java.util.Map;
 
 public class NotNull {
+    public static boolean isNotNull(Integer i) {
+        return null != i && 0 != i;
+    }
 
-	
-	public static boolean isNotNull(Integer i) {
-		if (null != i && 0 != i) {
-			return true;
-		}
-		return false;
-	}
+    public static boolean isNotNull(Double d) {
+        return null != d && 0 != d;
+    }
 
-	public static boolean isNotNull(Double d) {
-		if (null != d && 0 != d) {
-			return true;
-		}
-		return false;
-	}
+    public static boolean isNotNull(Object object) {
+        return null != object && !"".equals(object);
+    }
 
-	public static boolean isNotNull(Object object) {
-		if (null != object && !"".equals(object)) {
-			return true;
-		}
-		return false;
-	}
+    public static boolean isNotNull(List<?> t) {
+        return null != t && t.size() > 0;
+    }
 
-	public static boolean isNotNull(List<?> t) {
-		if (null != t && t.size() > 0) {
-			return true;
-		}
-		return false;
-	}
+    public static boolean isNotNull(Map<?, ?> t) {
+        return null != t && t.size() > 0;
+    }
 
-	public static boolean isNotNull(Map<?, ?> t) {
-		if (null != t && t.size() > 0) {
-			return true;
-		}
-		return false;
-	}
+    public static boolean isNotNull(Object[] objects) {
+        return null != objects && objects.length > 0;
+    }
 
-	public static boolean isNotNull(Object[] objects) {
-		if (null != objects && objects.length > 0) {
-			return true;
-		}
-		return false;
-	}
+    public static boolean isNotNull(JSONArray jsonArray) {
+        return null != jsonArray && jsonArray.length() > 0;
+    }
 
-	public static boolean isNotNull(JSONArray jsonArray) {
-		if (null != jsonArray && jsonArray.length() > 0) {
-			return true;
-		}
-		return false;
-	}
+    public static boolean isNotNull(JSONObject jsonObject) {
+        return null != jsonObject;
+    }
 
-	public static boolean isNotNull(JSONObject jsonObject) {
-		if (null != jsonObject && !"".equals(jsonObject)) {
-			return true;
-		}
-		return false;
-	}
-
-	public static boolean isNotNullAndNaN(Object object) {
-		if (isNotNull(object) && !object.toString().equals("NaN")) {
-			return true;
-		}
-		return false;
-	}
-
+    public static boolean isNotNullAndNaN(Object object) {
+        return isNotNull(object) && !object.toString().equals("NaN");
+    }
 }

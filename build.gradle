@@ -9,6 +9,7 @@ buildscript {
         maven { url 'https://jitpack.io' }
         maven { url 'http://kotlinx.com/repository' }
         jcenter()
+        google()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:4.1.3'
@@ -27,6 +28,7 @@ allprojects {
         maven { url 'https://jitpack.io' }
         maven { url 'http://kotlinx.com/repository' }
         jcenter()
+        google()
     }
 }
 

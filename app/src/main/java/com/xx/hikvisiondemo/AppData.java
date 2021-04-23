@@ -107,7 +107,7 @@ public class AppData extends Application {
             editor.putString("callLongitude", "E133.176");
             editor.commit();
         }
-        if (isOpenAlarm == true) {
+        if (isOpenAlarm) {
             editor.putBoolean("isOpenAlarm", true);
             editor.commit();
         }
@@ -115,6 +115,5 @@ public class AppData extends Application {
         //设置初始音量值0-15
         AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         am.setStreamVolume(AudioManager.STREAM_MUSIC, volumeValue, AudioManager.FLAG_PLAY_SOUND);
-
     }
 }
