@@ -39,13 +39,8 @@ public class My2Activity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        cameraManager1.stopPlay();
-        cameraManager1.logoutDevice();
-        cameraManager1.freeSDK();
-
-        cameraManager2.stopPlay();
-        cameraManager2.logoutDevice();
-        cameraManager2.freeSDK();
+        cameraManager1.onDestroy();
+        cameraManager2.onDestroy();
     }
 }
 ```

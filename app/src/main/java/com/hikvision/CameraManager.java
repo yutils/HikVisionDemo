@@ -35,9 +35,7 @@ cameraManager.initAll(this, cameraDevice, binding.surfaceView);
 @Override
 protected void onDestroy() {
     super.onDestroy();
-    cameraManager.stopPlay();
-    cameraManager.logoutDevice();
-    cameraManager.freeSDK();
+    cameraManager.onDestroy();
 }
  */
 public class CameraManager {
