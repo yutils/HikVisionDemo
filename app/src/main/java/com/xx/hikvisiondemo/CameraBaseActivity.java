@@ -35,26 +35,18 @@ import static com.hikvision.netsdk.PTZPresetCmd.CLE_PRESET;
 import static com.hikvision.netsdk.PTZPresetCmd.SET_PRESET;
 
 /**
- * <pre>
- *  ClassName  DemoActivity Class
- * </pre>
- *
- * @author zhuzhenlei
- * @author yujing 2021年4月23日09:50:43
- * @version V1.0
- * @modificationHistory
+ * 原始用法
+ * 封装调用 请移步My1Activity
  */
 public class CameraBaseActivity extends Activity implements Callback, OnTouchListener {
-    private SurfaceView m_osurfaceView = null;
+    private SurfaceView surfaceView = null;
     private NET_DVR_DEVICEINFO_V30 m_oNetDvrDeviceInfoV30 = null;
     private int m_iLogID = -1; // return by NET_DVR_Login_v30
     private int m_iPlayID = -1; // return by NET_DVR_RealPlay_V30
     private int m_iPlaybackID = -1; // return by NET_DVR_PlayBackByTime
     private int m_iPort = -1; // play port
     private int m_iStartChan = 0; // start channel no
-    private int m_iChanNum = 0; // channel number
     private final String TAG = "DemoActivity";
-    private boolean m_bNeedDecode = true;
     private boolean m_bStopPlayback = false;
     private Thread thread;
     private boolean isShow = true;
@@ -79,37 +71,25 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
         CrashUtil.getInstance().init(this);
         app = (AppData) getApplication();
         setContentView(R.layout.main);
-        if (!initeSdk()) {
+        if (!initSdk()) {
             this.finish();
             return;
         }
-
-        if (!initeActivity()) {
-            this.finish();
-            return;
-        }
+        initActivity();
         // login on the device
-        m_iLogID = loginDevice();
+        m_iLogID = loginNormalDevice();
         if (m_iLogID < 0) {
             Log.e(TAG, "This device logins failed!");
             return;
         } else {
             System.out.println("m_iLogID=" + m_iLogID);
         }
-        // get instance of exception callback and set
-        ExceptionCallBack oexceptionCbf = getExceptiongCbf();
-
-        if (!HCNetSDK.getInstance().NET_DVR_SetExceptionCallBack(
-                oexceptionCbf)) {
+        // 获取异常回调实例并设置
+        ExceptionCallBack exceptionCallBack = getExceptiongCbf();
+        if (!HCNetSDK.getInstance().NET_DVR_SetExceptionCallBack(exceptionCallBack)) {
             Log.e(TAG, "NET_DVR_SetExceptionCallBack is failed!");
             return;
         }
-
-        //预览
-        final NET_DVR_PREVIEWINFO ClientInfo = new NET_DVR_PREVIEWINFO();
-        ClientInfo.lChannel = 0;
-        ClientInfo.dwStreamType = device.getChannel(); // 主码流，子码流
-        ClientInfo.bBlocked = 1;
         //设置默认点
         thread = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
@@ -123,28 +103,42 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
         thread.start();
     }
 
-    // @Override
+    // GUI init
+    private void initActivity() {
+        this.btnZoomOut = findViewById(R.id.btn_ZoomOut);
+        this.btnZoomIn = findViewById(R.id.btn_ZoomIn);
+        this.btnRight = findViewById(R.id.btn_Right);
+        this.btnLeft = findViewById(R.id.btn_Left);
+        this.btnDown = findViewById(R.id.btn_Down);
+        this.btnUp = findViewById(R.id.btn_Up);
+        btnUp.setOnTouchListener(this);
+        btnDown.setOnTouchListener(this);
+        btnLeft.setOnTouchListener(this);
+        btnRight.setOnTouchListener(this);
+        btnZoomIn.setOnTouchListener(this);
+        btnZoomOut.setOnTouchListener(this);
+        this.surfaceView = findViewById(R.id.sf_VideoMonitor);
+        surfaceView.getHolder().addCallback(this);
+    }
+
+    @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        m_osurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+        surfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
         Log.i(TAG, "surface is created" + m_iPort);
-        if (-1 == m_iPort) {
-            return;
-        }
+        if (-1 == m_iPort) return;
         Surface surface = holder.getSurface();
         if (surface.isValid()) {
-            if (!Player.getInstance()
-                    .setVideoWindow(m_iPort, 0, holder)) {
+            if (!Player.getInstance().setVideoWindow(m_iPort, 0, holder)) {
                 Log.e(TAG, "Player setVideoWindow failed!");
             }
         }
     }
 
-    // @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width,
-                               int height) {
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
     }
 
-    // @Override
+    @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         Log.i(TAG, "Player setVideoWindow release!" + m_iPort);
         if (-1 == m_iPort) {
@@ -176,7 +170,7 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
      * @author zhuzhenlei
      * @brief SDK init
      */
-    private boolean initeSdk() {
+    private boolean initSdk() {
         // init net sdk
         if (!HCNetSDK.getInstance().NET_DVR_Init()) {
             Log.e(TAG, "HCNetSDK init is failed!");
@@ -186,91 +180,64 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
         return true;
     }
 
-    // GUI init
-    private boolean initeActivity() {
-        findViews();
-        m_osurfaceView.getHolder().addCallback(this);
-        return true;
-    }
-
-    // get controller instance
-    private void findViews() {
-        this.btnZoomOut = findViewById(R.id.btn_ZoomOut);
-        this.btnZoomIn = findViewById(R.id.btn_ZoomIn);
-        this.btnRight = findViewById(R.id.btn_Right);
-        this.btnLeft = findViewById(R.id.btn_Left);
-        this.btnDown = findViewById(R.id.btn_Down);
-        this.btnUp = findViewById(R.id.btn_Up);
-        btnUp.setOnTouchListener(this);
-        btnDown.setOnTouchListener(this);
-        btnLeft.setOnTouchListener(this);
-        btnRight.setOnTouchListener(this);
-        btnZoomIn.setOnTouchListener(this);
-        btnZoomOut.setOnTouchListener(this);
-        this.m_osurfaceView = findViewById(R.id.sf_VideoMonitor);
-    }
-
     @Override
     public boolean onTouch(final View v, final MotionEvent event) {
         if (!NotNull.isNotNull(h1)) return false;
         Log.d(TAG, "onTouch: ");
-        new Thread() {
-            @Override
-            public void run() {
-                switch (v.getId()) {
-                    case R.id.btn_Up:
-                        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                            h1.startMove(8, m_iLogID);
-                        }
-                        if (event.getAction() == MotionEvent.ACTION_UP) {
-                            h1.stopMove(8, m_iLogID);
-                        }
-                        break;
-                    case R.id.btn_Left:
-                        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                            h1.startMove(4, m_iLogID);
-                        }
-                        if (event.getAction() == MotionEvent.ACTION_UP) {
-                            h1.stopMove(4, m_iLogID);
-                        }
-                        break;
-                    case R.id.btn_Right:
-                        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                            h1.startMove(6, m_iLogID);
-                        }
-                        if (event.getAction() == MotionEvent.ACTION_UP) {
-                            h1.stopMove(6, m_iLogID);
-                        }
-                        break;
-                    case R.id.btn_Down:
-                        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                            h1.startMove(2, m_iLogID);
-                        }
-                        if (event.getAction() == MotionEvent.ACTION_UP) {
-                            h1.stopMove(2, m_iLogID);
-                        }
-                        break;
-                    case R.id.btn_ZoomIn:
-                        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                            h1.startZoom(1, m_iLogID);
-                        }
-                        if (event.getAction() == MotionEvent.ACTION_UP) {
-                            h1.stopZoom(1, m_iLogID);
-                        }
-                        break;
-                    case R.id.btn_ZoomOut:
-                        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                            h1.startZoom(-1, m_iLogID);
-                        }
-                        if (event.getAction() == MotionEvent.ACTION_UP) {
-                            h1.stopZoom(-1, m_iLogID);
-                        }
-                        break;
-                    default:
-                        break;
-                }
+        new Thread(() -> {
+            switch (v.getId()) {
+                case R.id.btn_Up:
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        h1.startMove(8, m_iLogID);
+                    }
+                    if (event.getAction() == MotionEvent.ACTION_UP) {
+                        h1.stopMove(8, m_iLogID);
+                    }
+                    break;
+                case R.id.btn_Left:
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        h1.startMove(4, m_iLogID);
+                    }
+                    if (event.getAction() == MotionEvent.ACTION_UP) {
+                        h1.stopMove(4, m_iLogID);
+                    }
+                    break;
+                case R.id.btn_Right:
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        h1.startMove(6, m_iLogID);
+                    }
+                    if (event.getAction() == MotionEvent.ACTION_UP) {
+                        h1.stopMove(6, m_iLogID);
+                    }
+                    break;
+                case R.id.btn_Down:
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        h1.startMove(2, m_iLogID);
+                    }
+                    if (event.getAction() == MotionEvent.ACTION_UP) {
+                        h1.stopMove(2, m_iLogID);
+                    }
+                    break;
+                case R.id.btn_ZoomIn:
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        h1.startZoom(1, m_iLogID);
+                    }
+                    if (event.getAction() == MotionEvent.ACTION_UP) {
+                        h1.stopZoom(1, m_iLogID);
+                    }
+                    break;
+                case R.id.btn_ZoomOut:
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        h1.startZoom(-1, m_iLogID);
+                    }
+                    if (event.getAction() == MotionEvent.ACTION_UP) {
+                        h1.stopZoom(-1, m_iLogID);
+                    }
+                    break;
+                default:
+                    break;
             }
-        }.start();
+        }).start();
         return false;
     }
 
@@ -312,9 +279,10 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
         previewInfo.lChannel = m_iStartChan;
         previewInfo.dwStreamType = device.getChannel(); // subStream
         previewInfo.bBlocked = 1;
-//
+
         m_iPlayID = HCNetSDK.getInstance().NET_DVR_RealPlay_V40(m_iLogID,
                 previewInfo, fRealDataCallBack);
+
         if (m_iPlayID < 0) {
             Log.e(TAG, "NET_DVR_RealPlay is failed!Err:"
                     + HCNetSDK.getInstance().NET_DVR_GetLastError());
@@ -329,8 +297,7 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
         Intent intent = getIntent();
         if (NotNull.isNotNull(intent) && intent.getIntExtra("INDEX", -1) != -1) {
             int point = app.preferences.getInt("POINT", 0);
-            boolean b = HCNetSDK.getInstance().NET_DVR_PTZPreset(m_iPlayID, PTZCommand.GOTO_PRESET,
-                    point);
+            boolean b = HCNetSDK.getInstance().NET_DVR_PTZPreset(m_iPlayID, PTZCommand.GOTO_PRESET, point);
         }
     }
 
@@ -347,11 +314,9 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
         }
         // net sdk stop preview
         if (!HCNetSDK.getInstance().NET_DVR_StopRealPlay(m_iPlayID)) {
-            Log.e(TAG, "StopRealPlay is failed!Err:"
-                    + HCNetSDK.getInstance().NET_DVR_GetLastError());
+            Log.e(TAG, "StopRealPlay is failed!Err:" + HCNetSDK.getInstance().NET_DVR_GetLastError());
             return;
         }
-
         m_iPlayID = -1;
         stopSinglePlayer();
     }
@@ -363,7 +328,6 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
             Log.e(TAG, "stop is failed!");
             return;
         }
-
         if (!Player.getInstance().closeStream(m_iPort)) {
             Log.e(TAG, "closeStream is failed!");
             return;
@@ -388,31 +352,27 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
         int iLogID = HCNetSDK.getInstance().NET_DVR_Login_V30(device.getIp(), device.getPort(),
                 device.getUserName(), device.getPassWord(), m_oNetDvrDeviceInfoV30);
         if (iLogID < 0) {
-            Log.e(TAG, "NET_DVR_Login is failed!Err:"
-                    + HCNetSDK.getInstance().NET_DVR_GetLastError());
+            Log.e(TAG, "NET_DVR_Login is failed!Err:" + HCNetSDK.getInstance().NET_DVR_GetLastError());
             return -1;
+        }
+        System.out.println("下面是设备信息************************");
+        System.out.println("userId=" + m_iLogID);
+        System.out.println("通道开始=" + m_oNetDvrDeviceInfoV30.byStartChan);
+        System.out.println("通道个数=" + m_oNetDvrDeviceInfoV30.byChanNum);
+        System.out.println("设备类型=" + m_oNetDvrDeviceInfoV30.byDVRType);
+        System.out.println("ip通道个数=" + m_oNetDvrDeviceInfoV30.byIPChanNum);
+        if (m_iLogID < 0) {
+            int errorCode = HCNetSDK.getInstance().NET_DVR_GetLastError();
+            Log.e(TAG, "登入设备失败！ code：" + errorCode);
+        } else {
+            Log.i(TAG, "登入设备成功！");
         }
         if (m_oNetDvrDeviceInfoV30.byChanNum > 0) {
             m_iStartChan = m_oNetDvrDeviceInfoV30.byStartChan;
-            m_iChanNum = m_oNetDvrDeviceInfoV30.byChanNum;
         } else if (m_oNetDvrDeviceInfoV30.byIPChanNum > 0) {
             m_iStartChan = m_oNetDvrDeviceInfoV30.byStartDChan;
-            m_iChanNum = m_oNetDvrDeviceInfoV30.byIPChanNum
-                    + m_oNetDvrDeviceInfoV30.byHighDChanNum * 256;
         }
         Log.i(TAG, "NET_DVR_Login is Successful!");
-        return iLogID;
-    }
-
-    /**
-     * @return login ID
-     * @fn loginDevice
-     * @author zhangqing
-     * @brief login on device
-     */
-    private int loginDevice() {
-        int iLogID = -1;
-        iLogID = loginNormalDevice();
         return iLogID;
     }
 
@@ -433,8 +393,7 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
     private RealPlayCallBack getRealPlayerCbf() {
         RealPlayCallBack cbf = (iRealHandle, iDataType, pDataBuffer, iDataSize) -> {
             // player channel 1
-            CameraBaseActivity.this.processRealData(iDataType, pDataBuffer,
-                    iDataSize, Player.STREAM_REALTIME);
+            CameraBaseActivity.this.processRealData(iDataType, pDataBuffer, iDataSize, Player.STREAM_REALTIME);
         };
         return cbf;
     }
@@ -449,71 +408,53 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
      * @author zhuzhenlei
      * @brief process real data
      */
-    public void processRealData(int iDataType,
-                                byte[] pDataBuffer, int iDataSize, int iStreamMode) {
-        if (!m_bNeedDecode) {
-            // Log.i(TAG, "iPlayViewNo:" + iPlayViewNo + ",iDataType:" +
-            // iDataType + ",iDataSize:" + iDataSize);
+    public void processRealData(int iDataType, byte[] pDataBuffer, int iDataSize, int iStreamMode) {
+        if (HCNetSDK.NET_DVR_SYSHEAD == iDataType) {
+            if (m_iPort >= 0) return;
+            m_iPort = Player.getInstance().getPort();
+            if (m_iPort == -1) {
+                Log.e(TAG, "getPort is failed with: " + Player.getInstance().getLastError(m_iPort));
+                return;
+            }
+            Log.i(TAG, "getPort succ with: " + m_iPort);
+            if (iDataSize > 0) {
+                // set stream mode
+                if (!Player.getInstance().setStreamOpenMode(m_iPort, iStreamMode)) {
+                    Log.e(TAG, "setStreamOpenMode failed");
+                    return;
+                }
+                // open stream
+                if (!Player.getInstance().openStream(m_iPort, pDataBuffer, iDataSize, 2 * 1024 * 1024)) {
+                    Log.e(TAG, "openStream failed");
+                    return;
+                }
+                if (!Player.getInstance().play(m_iPort, surfaceView.getHolder())) {
+                    Log.e(TAG, "play failed");
+                    return;
+                }
+                if (!Player.getInstance().playSound(m_iPort)) {
+                    Log.e(TAG, "playSound failed with error code:" + Player.getInstance().getLastError(m_iPort));
+                    return;
+                }
+            }
         } else {
-            if (HCNetSDK.NET_DVR_SYSHEAD == iDataType) {
-                if (m_iPort >= 0) {
-                    return;
-                }
-                m_iPort = Player.getInstance().getPort();
-                if (m_iPort == -1) {
-                    Log.e(TAG, "getPort is failed with: "
-                            + Player.getInstance().getLastError(m_iPort));
-                    return;
-                }
-                Log.i(TAG, "getPort succ with: " + m_iPort);
-                if (iDataSize > 0) {
-                    if (!Player.getInstance().setStreamOpenMode(m_iPort,
-                            iStreamMode)) // set stream mode
-                    {
-                        Log.e(TAG, "setStreamOpenMode failed");
-                        return;
+            if (!Player.getInstance().inputData(m_iPort, pDataBuffer,
+                    iDataSize)) {
+                // Log.e(TAG, "inputData failed with: " +
+                // Player.getInstance().getLastError(m_iPort));
+                for (int i = 0; i < 4000 && m_iPlaybackID >= 0
+                        && !m_bStopPlayback; i++) {
+                    if (Player.getInstance().inputData(m_iPort, pDataBuffer, iDataSize)) {
+                        break;
                     }
-                    if (!Player.getInstance().openStream(m_iPort, pDataBuffer,
-                            iDataSize, 2 * 1024 * 1024)) // open stream
-                    {
-                        Log.e(TAG, "openStream failed");
-                        return;
+                    if (i % 100 == 0) {
+                        Log.e(TAG, "inputData failed with: " + Player.getInstance().getLastError(m_iPort) + ", i:" + i);
                     }
-                    if (!Player.getInstance().play(m_iPort,
-                            m_osurfaceView.getHolder())) {
-                        Log.e(TAG, "play failed");
-                        return;
-                    }
-                    if (!Player.getInstance().playSound(m_iPort)) {
-                        Log.e(TAG, "playSound failed with error code:"
-                                + Player.getInstance().getLastError(m_iPort));
-                        return;
-                    }
-                }
-            } else {
-                if (!Player.getInstance().inputData(m_iPort, pDataBuffer,
-                        iDataSize)) {
-                    // Log.e(TAG, "inputData failed with: " +
-                    // Player.getInstance().getLastError(m_iPort));
-                    for (int i = 0; i < 4000 && m_iPlaybackID >= 0
-                            && !m_bStopPlayback; i++) {
-                        if (Player.getInstance().inputData(m_iPort,
-                                pDataBuffer, iDataSize)) {
-                            break;
-
-                        }
-
-                        if (i % 100 == 0) {
-                            Log.e(TAG, "inputData failed with: "
-                                    + Player.getInstance()
-                                    .getLastError(m_iPort) + ", i:" + i);
-                        }
-                        try {
-                            Thread.sleep(10);
-                        } catch (InterruptedException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
                     }
                 }
             }
@@ -528,7 +469,6 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
      */
     public void Cleanup() {
         // release player resource
-
         Player.getInstance().freePort(m_iPort);
         m_iPort = -1;
         // release net SDK resource
@@ -582,10 +522,8 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
         });
         //转到预置点
         button.setOnClickListener(v -> {
-
             Integer integer = Integer.valueOf(editText.getText().toString());
             if (integer > 255 || integer < 0) {
-
                 Toast.makeText(CameraBaseActivity.this, "请设置0-255之间", Toast.LENGTH_SHORT).show();
                 return;
             }

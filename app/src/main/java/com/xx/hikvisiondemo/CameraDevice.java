@@ -4,7 +4,6 @@ package com.xx.hikvisiondemo;
  * 设备实体类
  */
 public class CameraDevice {
-
     /**
      * IP地址
      */
@@ -79,7 +78,12 @@ public class CameraDevice {
 
     @Override
     public String toString() {
-        return "[IP=" + ip + "; PORT=" + port + "; USERNAME=" + userName + "; PASSWORD=" + passWord + "; CHANNEL=" + channel + ";]";
+        return "CameraDevice{" +
+                "ip='" + ip + '\'' +
+                ", port=" + port +
+                ", userName='" + userName + '\'' +
+                ", passWord='" + passWord + '\'' +
+                ", channel=" + channel +
+                '}';
     }
-
 }

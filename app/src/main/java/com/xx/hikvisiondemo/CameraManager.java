@@ -1,10 +1,14 @@
 package com.xx.hikvisiondemo;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.PixelFormat;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 
 import com.hikvision.netsdk.HCNetSDK;
 import com.hikvision.netsdk.NET_DVR_DEVICEINFO_V30;
@@ -19,6 +23,23 @@ import org.MediaPlayer.PlayM4.PlayerCallBack;
 /**
  * Created by JJT-ssd on 2016/9/23.
  */
+/*
+用法：
+
+//设置摄像头参数
+CameraDevice cameraDevice = new CameraDevice("192.168.1.65", 8000, "admin", "pw&123456", 2);
+//启动
+CameraManager cameraManager = new CameraManager();
+cameraManager.initAll(this, cameraDevice, binding.surfaceView);
+
+@Override
+protected void onDestroy() {
+    super.onDestroy();
+    cameraManager.stopPlay();
+    cameraManager.logoutDevice();
+    cameraManager.freeSDK();
+}
+ */
 public class CameraManager {
     private final static String TAG = "HC_DEBUG";
     public final static String ACTION_START_RENDERING = "action_start_rendering";
@@ -31,19 +52,22 @@ public class CameraManager {
      * 登入标记 -1未登入，0已登入
      */
     private int m_iLogID = -1;
-
+    private int m_iStartChan = 0;
     /**
      * 播放标记 -1未播放，0正在播放
      */
     private int m_iPlayID = -1;
     private int m_iPort = -1;
+    private SurfaceView surfaceView;
     private SurfaceHolder holder;
     private CameraDevice device;
+
+    public boolean isPlaying = false;
     /**
      * 用于发广播的上下文
      */
     private Context context;
-    private boolean m_bStopPlayback;
+
 
     public CameraManager() {
 
@@ -58,13 +82,10 @@ public class CameraManager {
         this.device = device;
     }
 
-    /**
-     * 设置播放视口
-     *
-     * @param holder
-     */
-    public void setSurfaceHolder(SurfaceHolder holder) {
-        this.holder = holder;
+    public void setSurfaceView(SurfaceView surfaceView) {
+        this.surfaceView = surfaceView;
+        holder = surfaceView.getHolder();
+        holder.addCallback(callback);
     }
 
     /**
@@ -76,6 +97,22 @@ public class CameraManager {
         this.context = context;
     }
 
+    public void initAll(Activity activity, CameraDevice cameraDevice, SurfaceView surfaceView) {
+        initSDK();
+        setContext(activity);
+        setCameraDevice(cameraDevice);
+        setSurfaceView(surfaceView);
+        loginDevice();
+        new Thread(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                SystemClock.sleep(1000);
+                if (!isPlaying)
+                    activity.runOnUiThread(() -> startSinglePreview());
+                else break;
+            }
+        }).start();
+    }
+
     public void initSDK() {
         if (m_iPlayID >= 0) {
             stopPlay();
@@ -85,12 +122,13 @@ public class CameraManager {
         } else {
             Log.e(TAG, "初始化SDK失败！");
         }
+        HCNetSDK.getInstance().NET_DVR_SetLogToFile(3, "/mnt/sdcard/sdklog/", true);
     }
 
     public void loginDevice() {
         deviceInfo_V30 = new NET_DVR_DEVICEINFO_V30();
+        deviceInfo_V30.byChanNum=2;
         m_iLogID = HCNetSDK.getInstance().NET_DVR_Login_V30(device.getIp(), device.getPort(), device.getUserName(), device.getPassWord(), deviceInfo_V30);
-
         System.out.println("下面是设备信息************************");
         System.out.println("userId=" + m_iLogID);
         System.out.println("通道开始=" + deviceInfo_V30.byStartChan);
@@ -100,13 +138,48 @@ public class CameraManager {
 
         if (m_iLogID < 0) {
             int errorCode = HCNetSDK.getInstance().NET_DVR_GetLastError();
-            Log.e(TAG,
-                    "登入设备失败！" + getErrorMsg(errorCode));
+            Log.e(TAG, "登入设备失败！" + getErrorMsg(errorCode));
         } else {
-            Log.i(TAG, "登入设备成功！");
+            Log.i(TAG, "登入设备成功！ id="+m_iLogID);
+        }
+        if (deviceInfo_V30.byChanNum > 0) {
+            m_iStartChan = deviceInfo_V30.byStartChan;
+        } else if (deviceInfo_V30.byIPChanNum > 0) {
+            m_iStartChan = deviceInfo_V30.byStartDChan;
         }
     }
 
+    SurfaceHolder.Callback callback = new SurfaceHolder.Callback() {
+        @Override
+        public void surfaceCreated(SurfaceHolder holder) {
+            surfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+            Log.i(TAG, "surface is created" + m_iPort);
+            if (-1 == m_iPort) return;
+            Surface surface = holder.getSurface();
+            if (surface.isValid()) {
+                if (!Player.getInstance().setVideoWindow(m_iPort, 0, holder)) {
+                    Log.e(TAG, "Player setVideoWindow failed!");
+                }
+            }
+        }
+
+        @Override
+        public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        }
+
+        @Override
+        public void surfaceDestroyed(SurfaceHolder holder) {
+            Log.i(TAG, "Player setVideoWindow release!" + m_iPort);
+            if (-1 == m_iPort) {
+                return;
+            }
+            if (holder.getSurface().isValid()) {
+                if (!Player.getInstance().setVideoWindow(m_iPort, 0, null)) {
+                    Log.e(TAG, "Player setVideoWindow failed!");
+                }
+            }
+        }
+    };
 
     //preSetPosition为预设点 取1为预设点1 取2为预设点2
     public synchronized void realPlay(int preSetPosition) {
@@ -146,12 +219,10 @@ public class CameraManager {
                         m_iLogID, ClientInfo, getRealPlayerCallBack());
 
                 if (m_iPlayID < 0) {
-                    int count = 0;
                     while (true) {
                         m_iPlayID = HCNetSDK.getInstance().NET_DVR_RealPlay_V40(
                                 m_iLogID, ClientInfo, getRealPlayerCallBack());
                         if (m_iPlayID < 0) {
-                            count++;
                             SystemClock.sleep(1000);
                         } else {
                             //设置默认点
@@ -182,9 +253,9 @@ public class CameraManager {
         }
     }
 
-    private void startSinglePreview() {
+    public void startSinglePreview() {
         if (m_iPlayID >= 0) {
-            Log.i(TAG, "Please stop palyback first");
+            Log.i(TAG, "正在播放");
             return;
         }
         RealPlayCallBack fRealDataCallBack = getRealPlayerCbf();
@@ -192,29 +263,18 @@ public class CameraManager {
             Log.e(TAG, "fRealDataCallBack object is failed!");
             return;
         }
-        Log.i(TAG, "m_iStartChan:" + 0);
-
         NET_DVR_PREVIEWINFO previewInfo = new NET_DVR_PREVIEWINFO();
-        previewInfo.lChannel = 0;
-        previewInfo.dwStreamType = 0; // substream
+        previewInfo.lChannel = m_iStartChan;
+        previewInfo.dwStreamType = device.getChannel(); // subStream
         previewInfo.bBlocked = 1;
-//         NET_DVR_CLIENTINFO struClienInfo = new NET_DVR_CLIENTINFO();
-//         struClienInfo.lChannel = m_iStartChan;
-//         struClienInfo.lLinkMode = 0;
-        // HCNetSDK start preview
-        m_iPlayID = HCNetSDK.getInstance().NET_DVR_RealPlay_V40(m_iLogID,
-                previewInfo, fRealDataCallBack);
-//         m_iPlayID = HCNetSDK.getInstance().NET_DVR_RealPlay_V30(m_iLogID,
-//         struClienInfo, fRealDataCallBack, false);
+
+        m_iPlayID = HCNetSDK.getInstance().NET_DVR_RealPlay_V40(m_iLogID, previewInfo, fRealDataCallBack);
         if (m_iPlayID < 0) {
-            Log.e(TAG, "NET_DVR_RealPlay is failed!Err:"
-                    + HCNetSDK.getInstance().NET_DVR_GetLastError());
+            Log.e(TAG, "NET_DVR_RealPlay is failed!Err:" + HCNetSDK.getInstance().NET_DVR_GetLastError());
             return;
         }
-
-        Log.i(TAG,
-                "NetSdk Play sucess ***********************3***************************");
-//        m_oPreviewBtn.setText("Stop");
+        isPlaying = true;
+        Log.i(TAG, "**************************************播放开始**************************************");
     }
 
     /**
@@ -225,14 +285,11 @@ public class CameraManager {
      */
     private RealPlayCallBack getRealPlayerCbf() {
         RealPlayCallBack cbf = (iRealHandle, iDataType, pDataBuffer, iDataSize) -> {
-            // player channel 1
-            processRealData(1, iDataType, pDataBuffer,
-                    iDataSize, Player.STREAM_REALTIME);
+            processRealData(1, iDataType, pDataBuffer, iDataSize, Player.STREAM_REALTIME);
         };
         return cbf;
     }
 
-    private boolean m_bNeedDecode = true;
 
     /**
      * @param iPlayViewNo - player channel [in]
@@ -247,68 +304,61 @@ public class CameraManager {
      */
     public void processRealData(int iPlayViewNo, int iDataType,
                                 byte[] pDataBuffer, int iDataSize, int iStreamMode) {
-        if (!m_bNeedDecode) {
-            // Log.i(TAG, "iPlayViewNo:" + iPlayViewNo + ",iDataType:" +
-            // iDataType + ",iDataSize:" + iDataSize);
-        } else {
-            if (HCNetSDK.NET_DVR_SYSHEAD == iDataType) {
-                if (m_iPort >= 0) {
+        if (HCNetSDK.NET_DVR_SYSHEAD == iDataType) {
+            if (m_iPort >= 0) {
+                return;
+            }
+            m_iPort = Player.getInstance().getPort();
+            if (m_iPort == -1) {
+                Log.e(TAG, "getPort is failed with: "
+                        + Player.getInstance().getLastError(m_iPort));
+                return;
+            }
+            Log.i(TAG, "getPort succ with: " + m_iPort);
+            if (iDataSize > 0) {
+                if (!Player.getInstance().setStreamOpenMode(m_iPort,
+                        iStreamMode)) // set stream mode
+                {
+                    Log.e(TAG, "setStreamOpenMode failed");
                     return;
                 }
-                m_iPort = Player.getInstance().getPort();
-                if (m_iPort == -1) {
-                    Log.e(TAG, "getPort is failed with: "
+                if (!Player.getInstance().openStream(m_iPort, pDataBuffer,
+                        iDataSize, 2 * 1024 * 1024)) // open stream
+                {
+                    Log.e(TAG, "openStream failed");
+                    return;
+                }
+                if (!Player.getInstance().play(m_iPort,
+                        holder)) {
+                    Log.e(TAG, "play failed");
+                    return;
+                }
+                if (!Player.getInstance().playSound(m_iPort)) {
+                    Log.e(TAG, "playSound failed with error code:"
                             + Player.getInstance().getLastError(m_iPort));
                     return;
                 }
-                Log.i(TAG, "getPort succ with: " + m_iPort);
-                if (iDataSize > 0) {
-                    if (!Player.getInstance().setStreamOpenMode(m_iPort,
-                            iStreamMode)) // set stream mode
-                    {
-                        Log.e(TAG, "setStreamOpenMode failed");
-                        return;
+            }
+        } else {
+            if (!Player.getInstance().inputData(m_iPort, pDataBuffer,
+                    iDataSize)) {
+                // Log.e(TAG, "inputData failed with: " +
+                // Player.getInstance().getLastError(m_iPort));
+                for (int i = 0; i < 4000 && m_iPlayID >= 0; i++) {
+                    if (Player.getInstance().inputData(m_iPort,
+                            pDataBuffer, iDataSize)) {
+                        break;
                     }
-                    if (!Player.getInstance().openStream(m_iPort, pDataBuffer,
-                            iDataSize, 2 * 1024 * 1024)) // open stream
-                    {
-                        Log.e(TAG, "openStream failed");
-                        return;
+                    if (i % 100 == 0) {
+                        Log.e(TAG, "inputData failed with: " + Player.getInstance().getLastError(m_iPort) + ", i:" + i);
                     }
-                    if (!Player.getInstance().play(m_iPort,
-                            holder)) {
-                        Log.e(TAG, "play failed");
-                        return;
-                    }
-                    if (!Player.getInstance().playSound(m_iPort)) {
-                        Log.e(TAG, "playSound failed with error code:"
-                                + Player.getInstance().getLastError(m_iPort));
-                        return;
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
                     }
                 }
-            } else {
-                if (!Player.getInstance().inputData(m_iPort, pDataBuffer,
-                        iDataSize)) {
-                    // Log.e(TAG, "inputData failed with: " +
-                    // Player.getInstance().getLastError(m_iPort));
-                    for (int i = 0; i < 4000 && m_iPlayID >= 0
-                            && !m_bStopPlayback; i++) {
-                        if (Player.getInstance().inputData(m_iPort,
-                                pDataBuffer, iDataSize)) {
-                            break;
-                        }
-                        if (i % 100 == 0) {
-                            Log.e(TAG, "inputData failed with: " + Player.getInstance().getLastError(m_iPort) + ", i:" + i);
-                        }
-                        try {
-                            Thread.sleep(10);
-                        } catch (InterruptedException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-                    }
-                }
-
             }
         }
     }
