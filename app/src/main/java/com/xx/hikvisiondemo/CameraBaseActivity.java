@@ -68,7 +68,7 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
     private AppData app;
 
     //设置摄像头参数
-    public CameraDevice device = new CameraDevice("192.168.1.65", 8000, "admin", "pw&123456", 1);
+    public CameraDevice device = new CameraDevice("192.168.1.65", 8000, "admin", "pw&123456", 0);
 
     /**
      * Called when the activity is first created.
@@ -76,8 +76,7 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        CrashUtil crashUtil = CrashUtil.getInstance();
-        crashUtil.init(this);
+        CrashUtil.getInstance().init(this);
         app = (AppData) getApplication();
         setContentView(R.layout.main);
         if (!initeSdk()) {
