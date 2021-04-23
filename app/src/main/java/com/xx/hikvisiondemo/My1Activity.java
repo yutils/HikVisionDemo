@@ -22,7 +22,7 @@ public class My1Activity extends Activity {
         super.onCreate(savedInstanceState);
         My1Binding binding = DataBindingUtil.setContentView(this, R.layout.my1);
         //设置摄像头参数
-        CameraDevice cameraDevice = new CameraDevice("192.168.1.65", 8000, "admin", "pw&123456", 2);
+        CameraDevice cameraDevice = new CameraDevice("192.168.1.65", 8000, "admin", "pw&123456", 0);
         //如果有传过来的数据。就播放传递过来的数据
         CameraDevice[] cameraDevices= (CameraDevice[]) getIntent().getSerializableExtra("data");
         if (cameraDevices.length>=1){

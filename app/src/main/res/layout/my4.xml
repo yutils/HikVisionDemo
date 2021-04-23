@@ -17,7 +17,6 @@
                 android:id="@+id/surfaceView1"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_centerHorizontal="true"
                 android:layout_gravity="center"
                 android:layout_weight="1" />
 
@@ -25,7 +24,6 @@
                 android:id="@+id/surfaceView2"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_centerHorizontal="true"
                 android:layout_gravity="center"
                 android:layout_weight="1" />
         </LinearLayout>
@@ -40,7 +38,6 @@
                 android:id="@+id/surfaceView3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_centerHorizontal="true"
                 android:layout_gravity="center"
                 android:layout_weight="1" />
 
@@ -48,7 +45,6 @@
                 android:id="@+id/surfaceView4"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_centerHorizontal="true"
                 android:layout_gravity="center"
                 android:layout_weight="1" />
         </LinearLayout>
