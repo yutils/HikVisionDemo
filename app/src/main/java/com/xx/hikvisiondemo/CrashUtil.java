@@ -28,7 +28,7 @@ import java.util.Map;
 public class CrashUtil implements Thread.UncaughtExceptionHandler {
     private static final String TAG = "CrashUtil";
 
-    private static final String SD_CARD_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/SimpleDemo/crash";
+    private String path;
     private Thread.UncaughtExceptionHandler mDefaultCrashHandler;
 
     /**
@@ -64,6 +64,7 @@ public class CrashUtil implements Thread.UncaughtExceptionHandler {
     }
 
     public void init(Context context) {
+        path = context.getExternalFilesDir("crash").getAbsolutePath();
         mDefaultCrashHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(this);
         mContext = context;
@@ -88,7 +89,6 @@ public class CrashUtil implements Thread.UncaughtExceptionHandler {
         if (ex == null) {
             return false;
         }
-
         // 收集设备信息
         collectDeviceInfo();
         // 保存日志文件
@@ -125,22 +125,6 @@ public class CrashUtil implements Thread.UncaughtExceptionHandler {
             Log.e(TAG, "an error occurred when collect package info");
             e.printStackTrace();
         }
-
-//        Field[] fields = Build.class.getDeclaredFields();
-//        for (Field field : fields)
-//        {
-//            try
-//            {
-//                field.setAccessible(true);
-//                infos.put(field.getName(), field.get(null).toString());
-//                LogUtil.d(field.getName() + " : " + field.get(null));
-//            }
-//            catch (IllegalAccessException e)
-//            {
-//                LogUtil.e("an error occured when collect crash info");
-//                e.printStackTrace();
-//            }
-//        }
     }
 
     /**
@@ -177,17 +161,15 @@ public class CrashUtil implements Thread.UncaughtExceptionHandler {
             String fileName = "crash_" + time + "_" + currentTime + ".log";
 
             if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-                File dir = new File(SD_CARD_PATH);
+                File dir = new File(path);
                 if (!dir.exists()) {
                     boolean s = dir.mkdirs();
                     System.out.println(s);
                 }
-
-                FileOutputStream fileOutputStream = new FileOutputStream(SD_CARD_PATH + "/" + fileName);
+                FileOutputStream fileOutputStream = new FileOutputStream(path + "/" + fileName);
                 fileOutputStream.write(sb.toString().getBytes());
                 fileOutputStream.close();
             }
-
             return fileName;
         } catch (Exception e) {
             Log.e(TAG, "an error occurred while writing file...");

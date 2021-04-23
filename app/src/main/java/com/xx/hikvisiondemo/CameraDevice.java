@@ -12,7 +12,7 @@ public class CameraDevice {
     /**
      * 端口
      */
-    private String port;
+    private int port;
     /**
      * 用户名
      */
@@ -22,23 +22,23 @@ public class CameraDevice {
      */
     private String passWord;
     /**
-     * 通道号
+     * 通道号：0 主码流，1子码流, 2三码流
      */
-    private String channel;
+    private int channel;
 
-    public String getIP() {
+    public String getIp() {
         return ip;
     }
 
-    public void setIP(String ip) {
+    public void setIp(String ip) {
         this.ip = ip;
     }
 
-    public String getPort() {
+    public int getPort() {
         return port;
     }
 
-    public void setPort(String port) {
+    public void setPort(int port) {
         this.port = port;
     }
 
@@ -58,18 +58,18 @@ public class CameraDevice {
         this.passWord = passWord;
     }
 
-    public String getChannel() {
+    public int getChannel() {
         return channel;
     }
 
-    public void setChannel(String channel) {
+    public void setChannel(int channel) {
         this.channel = channel;
     }
 
     public CameraDevice() {
     }
 
-    public CameraDevice(String ip, String port, String userName, String passWord, String channel) {
+    public CameraDevice(String ip, int port, String userName, String passWord, int channel) {
         this.ip = ip;
         this.port = port;
         this.userName = userName;

@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.os.SystemClock;
-import androidx.appcompat.app.AlertDialog;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -14,13 +13,14 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
 
 import com.hikvision.netsdk.ExceptionCallBack;
 import com.hikvision.netsdk.HCNetSDK;
@@ -40,9 +40,9 @@ import static com.hikvision.netsdk.PTZPresetCmd.SET_PRESET;
  * </pre>
  *
  * @author zhuzhenlei
+ * @author yujing 2021年4月23日09:50:43
  * @version V1.0
  * @modificationHistory
- * @author yujing 2021年4月23日09:50:43
  */
 public class CameraBaseActivity extends Activity implements Callback, OnTouchListener {
     private SurfaceView m_osurfaceView = null;
@@ -67,11 +67,8 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
     private CameraManager h1;
     private AppData app;
 
-    public final String ADDRESS = "192.168.1.65";
-    public final int PORT = 8000;
-    public final String USER = "admin";
-    public final String PSD = "pw&123456";
-    public final int subStream = 1;//0 主码流，1子码流, 2三码流
+    //设置摄像头参数
+    public CameraDevice device = new CameraDevice("192.168.1.65", 8000, "admin", "pw&123456", 1);
 
     /**
      * Called when the activity is first created.
@@ -112,7 +109,7 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
         //预览
         final NET_DVR_PREVIEWINFO ClientInfo = new NET_DVR_PREVIEWINFO();
         ClientInfo.lChannel = 0;
-        ClientInfo.dwStreamType = subStream; // 主码流，子码流
+        ClientInfo.dwStreamType = device.getChannel(); // 主码流，子码流
         ClientInfo.bBlocked = 1;
         //设置默认点
         thread = new Thread(() -> {
@@ -199,7 +196,6 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
 
     // get controller instance
     private void findViews() {
-
         this.btnZoomOut = findViewById(R.id.btn_ZoomOut);
         this.btnZoomIn = findViewById(R.id.btn_ZoomIn);
         this.btnRight = findViewById(R.id.btn_Right);
@@ -213,7 +209,6 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
         btnZoomIn.setOnTouchListener(this);
         btnZoomOut.setOnTouchListener(this);
         this.m_osurfaceView = findViewById(R.id.sf_VideoMonitor);
-
     }
 
     @Override
@@ -316,7 +311,7 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
 
         NET_DVR_PREVIEWINFO previewInfo = new NET_DVR_PREVIEWINFO();
         previewInfo.lChannel = m_iStartChan;
-        previewInfo.dwStreamType = subStream; // subStream
+        previewInfo.dwStreamType = device.getChannel(); // subStream
         previewInfo.bBlocked = 1;
 //
         m_iPlayID = HCNetSDK.getInstance().NET_DVR_RealPlay_V40(m_iLogID,
@@ -391,8 +386,8 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
         // get instance
         m_oNetDvrDeviceInfoV30 = new NET_DVR_DEVICEINFO_V30();
         // call NET_DVR_Login_v30 to login on, port 8000 as default
-        int iLogID = HCNetSDK.getInstance().NET_DVR_Login_V30(ADDRESS, PORT,
-                USER, PSD, m_oNetDvrDeviceInfoV30);
+        int iLogID = HCNetSDK.getInstance().NET_DVR_Login_V30(device.getIp(), device.getPort(),
+                device.getUserName(), device.getPassWord(), m_oNetDvrDeviceInfoV30);
         if (iLogID < 0) {
             Log.e(TAG, "NET_DVR_Login is failed!Err:"
                     + HCNetSDK.getInstance().NET_DVR_GetLastError());
@@ -604,7 +599,5 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
                     point);
             Log.d(TAG, "onClick: " + b);
         });
-
-
     }
 }

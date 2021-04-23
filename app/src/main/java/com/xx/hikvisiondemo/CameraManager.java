@@ -37,30 +37,17 @@ public class CameraManager {
      */
     private int m_iPlayID = -1;
     private int m_iPort = -1;
-    private String ip;
-    private int port;
-    private String username;
-    private String password;
-    private int channel;
     private SurfaceHolder holder;
+    private CameraDevice device;
     /**
      * 用于发广播的上下文
      */
     private Context context;
-
-    private CameraManager manager = null;
     private boolean m_bStopPlayback;
 
     public CameraManager() {
 
     }
-
-//    public static  synchronized CameraManager getInstance() {
-//        if (manager == null) {
-//            manager = new CameraManager();
-//        }
-//        return manager;
-//    }
 
     /**
      * 设置播放设备信息
@@ -68,11 +55,7 @@ public class CameraManager {
      * @param device
      */
     public void setCameraDevice(CameraDevice device) {
-        this.ip = device.getIP();
-        this.port = Integer.parseInt(device.getPort());
-        this.username = device.getUserName();
-        this.password = device.getPassWord();
-        this.channel = Integer.parseInt(device.getChannel());
+        this.device = device;
     }
 
     /**
@@ -106,8 +89,7 @@ public class CameraManager {
 
     public void loginDevice() {
         deviceInfo_V30 = new NET_DVR_DEVICEINFO_V30();
-        m_iLogID = HCNetSDK.getInstance().NET_DVR_Login_V30(ip, port, username,
-                password, deviceInfo_V30);
+        m_iLogID = HCNetSDK.getInstance().NET_DVR_Login_V30(device.getIp(), device.getPort(), device.getUserName(), device.getPassWord(), deviceInfo_V30);
 
         System.out.println("下面是设备信息************************");
         System.out.println("userId=" + m_iLogID);
@@ -314,28 +296,21 @@ public class CameraManager {
                         if (Player.getInstance().inputData(m_iPort,
                                 pDataBuffer, iDataSize)) {
                             break;
-
                         }
-
                         if (i % 100 == 0) {
-                            Log.e(TAG, "inputData failed with: "
-                                    + Player.getInstance()
-                                    .getLastError(m_iPort) + ", i:" + i);
+                            Log.e(TAG, "inputData failed with: " + Player.getInstance().getLastError(m_iPort) + ", i:" + i);
                         }
-
                         try {
                             Thread.sleep(10);
                         } catch (InterruptedException e) {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
-
                         }
                     }
                 }
 
             }
         }
-
     }
 
     /**
@@ -350,8 +325,7 @@ public class CameraManager {
              * iDataSize 缓冲区大小
              */
             @Override
-            public void fRealDataCallBack(int iRealHandle, int iDataType,
-                                          byte[] pDataBuffer, int iDataSize) {
+            public void fRealDataCallBack(int iRealHandle, int iDataType, byte[] pDataBuffer, int iDataSize) {
                 processRealData(iDataType, pDataBuffer, iDataSize,
                         Player.STREAM_REALTIME);
             }
@@ -365,7 +339,6 @@ public class CameraManager {
         while (!isArrive) {
             isArrive = HCNetSDK.getInstance().NET_DVR_PTZPreset_Other(m_iLogID, 1, PTZPresetCmd.GOTO_PRESET, pointNum);
         }
-
     }
 
     public void setLoginId(int m_iLogID) {
@@ -380,8 +353,7 @@ public class CameraManager {
      * @param iDataSize   缓冲区大小
      * @param iStreamMode 播放模式
      */
-    private void processRealData(int iDataType, byte[] pDataBuffer,
-                                 int iDataSize, int iStreamMode) {
+    private void processRealData(int iDataType, byte[] pDataBuffer, int iDataSize, int iStreamMode) {
         Log.d(TAG, "processRealData: " + iDataType);
         Log.d(TAG, "processRealData: " + pDataBuffer);
         Log.d(TAG, "processRealData: " + iDataSize);
@@ -514,9 +486,7 @@ public class CameraManager {
      * @param orientation 九宫格数字方向
      */
     public void stopMove(int orientation, int m_iLogID) {
-        if (m_iLogID < 0) {
-            return;
-        }
+        if (m_iLogID < 0) return;
         switch (orientation) {
             case 9:
                 HCNetSDK.getInstance().NET_DVR_PTZControl_Other(m_iLogID, 1,
@@ -569,11 +539,9 @@ public class CameraManager {
 //            return;
 //        }
         if (x < 0) {
-            HCNetSDK.getInstance().NET_DVR_PTZControl_Other(m_iLogID, 1,
-                    PTZCommand.ZOOM_OUT, 0);
+            HCNetSDK.getInstance().NET_DVR_PTZControl_Other(m_iLogID, 1, PTZCommand.ZOOM_OUT, 0);
         } else {
-            HCNetSDK.getInstance().NET_DVR_PTZControl_Other(m_iLogID, 1,
-                    PTZCommand.ZOOM_IN, 0);
+            HCNetSDK.getInstance().NET_DVR_PTZControl_Other(m_iLogID, 1, PTZCommand.ZOOM_IN, 0);
         }
     }
 
@@ -583,16 +551,11 @@ public class CameraManager {
      * @param x -1缩小 1放大
      */
     public void stopZoom(int x, int m_iLogID) {
-        if (m_iLogID < 0) {
-            return;
-        }
+        if (m_iLogID < 0) return;
         if (x < 0) {
-            HCNetSDK.getInstance().NET_DVR_PTZControl_Other(m_iLogID, 1,
-                    PTZCommand.ZOOM_OUT, 1);
+            HCNetSDK.getInstance().NET_DVR_PTZControl_Other(m_iLogID, 1, PTZCommand.ZOOM_OUT, 1);
         } else {
-            HCNetSDK.getInstance().NET_DVR_PTZControl_Other(m_iLogID, 1,
-                    PTZCommand.ZOOM_IN, 1);
-
+            HCNetSDK.getInstance().NET_DVR_PTZControl_Other(m_iLogID, 1, PTZCommand.ZOOM_IN, 1);
         }
     }
 
@@ -602,9 +565,7 @@ public class CameraManager {
      * @param x -1近端 1远端
      */
     public void startFocus(int x) {
-        if (m_iPlayID < 0) {
-            return;
-        }
+        if (m_iPlayID < 0) return;
         if (x < 0) {
             HCNetSDK.getInstance().NET_DVR_PTZControl_Other(m_iLogID, 1,
                     PTZCommand.FOCUS_NEAR, 0);
@@ -620,18 +581,12 @@ public class CameraManager {
      * @param x -1近端 1远端
      */
     public void stopFocus(int x) {
-        if (m_iPlayID < 0) {
-            return;
-        }
+        if (m_iPlayID < 0) return;
         if (x < 0) {
-            HCNetSDK.getInstance().NET_DVR_PTZControl_Other(m_iLogID, 1,
-                    PTZCommand.FOCUS_NEAR, 1);
-
+            HCNetSDK.getInstance().NET_DVR_PTZControl_Other(m_iLogID, 1, PTZCommand.FOCUS_NEAR, 1);
         } else {
-            HCNetSDK.getInstance().NET_DVR_PTZControl_Other(m_iLogID, 1,
-                    PTZCommand.FOCUS_FAR, 1);
+            HCNetSDK.getInstance().NET_DVR_PTZControl_Other(m_iLogID, 1, PTZCommand.FOCUS_FAR, 1);
         }
-
     }
 
 
@@ -639,17 +594,12 @@ public class CameraManager {
      * 停止播放
      */
     public synchronized void stopPlay() {
-        if (m_iPlayID < 0) {
-            return;//已经停止
-        }
+        if (m_iPlayID < 0) return;//已经停止
         // 停止网络播放
         if (HCNetSDK.getInstance().NET_DVR_StopRealPlay(m_iPlayID)) {
             Log.i(TAG, "停止实时播放成功！");
         } else {
-            Log.e(TAG,
-                    "停止实时播放失败！"
-                            + getErrorMsg(HCNetSDK.getInstance()
-                            .NET_DVR_GetLastError()));
+            Log.e(TAG, "停止实时播放失败！" + getErrorMsg(HCNetSDK.getInstance().NET_DVR_GetLastError()));
             return;
         }
         // 停止本地播放
@@ -690,10 +640,7 @@ public class CameraManager {
             Log.i(TAG, "登出设备成功！");
         } else {
             m_iLogID = 0;
-            Log.e(TAG,
-                    "登出设备失败！"
-                            + getErrorMsg(HCNetSDK.getInstance()
-                            .NET_DVR_GetLastError()));
+            Log.e(TAG, "登出设备失败！" + getErrorMsg(HCNetSDK.getInstance().NET_DVR_GetLastError()));
         }
     }
 
@@ -713,12 +660,10 @@ public class CameraManager {
     public void setPoint(int point, int m_iPlayID) {
         switch (point) {
             case 8://设置预置点
-
                 break;
             case 9://清楚预置点
                 break;
             case 39://转到预置点
-
                 break;
         }
     }
@@ -1391,5 +1336,4 @@ public class CameraManager {
                 return "[" + errorCode + " NET_???_??] 未知错误。";
         }
     }
-
 }
