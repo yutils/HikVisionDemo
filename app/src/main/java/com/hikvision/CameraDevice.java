@@ -1,9 +1,11 @@
-package com.xx.hikvisiondemo;
+package com.hikvision;
+
+import java.io.Serializable;
 
 /**
  * 设备实体类
  */
-public class CameraDevice {
+public class CameraDevice implements Serializable {
     /**
      * IP地址
      */

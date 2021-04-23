@@ -10,8 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerHorizontal="true"
-        android:layout_gravity="center"
-        android:layout_marginTop="58px" />
+        android:layout_gravity="center" />
 
     <TextView
         android:id="@+id/tv_Loading"

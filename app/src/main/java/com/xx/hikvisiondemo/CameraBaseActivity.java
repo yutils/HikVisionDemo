@@ -22,6 +22,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.hikvision.CameraDevice;
+import com.hikvision.CameraManager;
 import com.hikvision.netsdk.ExceptionCallBack;
 import com.hikvision.netsdk.HCNetSDK;
 import com.hikvision.netsdk.NET_DVR_DEVICEINFO_V30;
@@ -57,7 +59,7 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
     private Button btnZoomIn;
     private Button btnZoomOut;
     private CameraManager h1;
-    private AppData app;
+    private App app;
 
     //设置摄像头参数
     public CameraDevice device = new CameraDevice("192.168.1.65", 8000, "admin", "pw&123456", 0);
@@ -69,11 +71,16 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         CrashUtil.getInstance().init(this);
-        app = (AppData) getApplication();
-        setContentView(R.layout.main);
+        app = (App) getApplication();
+        setContentView(R.layout.base);
         if (!initSdk()) {
             this.finish();
             return;
+        }
+        //如果有传过来的数据。就播放传递过来的数据
+        CameraDevice[] cameraDevices= (CameraDevice[]) getIntent().getSerializableExtra("data");
+        if (cameraDevices.length>=1){
+            device=cameraDevices[0];
         }
         initActivity();
         // login on the device
@@ -182,7 +189,7 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
 
     @Override
     public boolean onTouch(final View v, final MotionEvent event) {
-        if (!NotNull.isNotNull(h1)) return false;
+        if (h1 == null) return false;
         Log.d(TAG, "onTouch: ");
         new Thread(() -> {
             switch (v.getId()) {
@@ -289,13 +296,13 @@ public class CameraBaseActivity extends Activity implements Callback, OnTouchLis
             return;
         }
         isShow = false;
-        if (NotNull.isNotNull(thread)) {
+        if (thread != null) {
             thread.interrupt();
         }
         h1 = new CameraManager();
         h1.setLoginId(m_iLogID);
         Intent intent = getIntent();
-        if (NotNull.isNotNull(intent) && intent.getIntExtra("INDEX", -1) != -1) {
+        if (intent != null && intent.getIntExtra("INDEX", -1) != -1) {
             int point = app.preferences.getInt("POINT", 0);
             boolean b = HCNetSDK.getInstance().NET_DVR_PTZPreset(m_iPlayID, PTZCommand.GOTO_PRESET, point);
         }

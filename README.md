@@ -7,9 +7,17 @@
 5.升级到Androidx  
 6.升级到java8  
 7.优化部分代码结构  
-8.添加可控子码流变量  
-## 封装后一路播放请看  My1Activity代码
+8.添加可控子码流变量
+9.多路播放支持
+  
+# 界面截图
+
+![PS03](doc/1.png)  
+![PS03](doc/2.png)  
+![PS03](doc/3.png)  
+
 ## 双路播放请看  My2Activity代码
+## 四路播放请看  My4Activity代码
 
 双路播放
 ```java

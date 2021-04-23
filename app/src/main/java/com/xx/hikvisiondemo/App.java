@@ -9,7 +9,7 @@ import android.media.AudioManager;
 /**
  * 存储app全局数据，实现全局共享数据
  */
-public class AppData extends Application {
+public class App extends Application {
     //获取数据初始设置
     public SharedPreferences preferences;
     public SharedPreferences.Editor editor;

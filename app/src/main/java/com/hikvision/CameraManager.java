@@ -1,4 +1,4 @@
-package com.xx.hikvisiondemo;
+package com.hikvision;
 
 import android.app.Activity;
 import android.content.Context;
@@ -127,7 +127,7 @@ public class CameraManager {
 
     public void loginDevice() {
         deviceInfo_V30 = new NET_DVR_DEVICEINFO_V30();
-        deviceInfo_V30.byChanNum=2;
+        deviceInfo_V30.byChanNum = 2;
         m_iLogID = HCNetSDK.getInstance().NET_DVR_Login_V30(device.getIp(), device.getPort(), device.getUserName(), device.getPassWord(), deviceInfo_V30);
         System.out.println("下面是设备信息************************");
         System.out.println("userId=" + m_iLogID);
@@ -140,7 +140,7 @@ public class CameraManager {
             int errorCode = HCNetSDK.getInstance().NET_DVR_GetLastError();
             Log.e(TAG, "登入设备失败！" + getErrorMsg(errorCode));
         } else {
-            Log.i(TAG, "登入设备成功！ id="+m_iLogID);
+            Log.i(TAG, "登入设备成功！ id=" + m_iLogID);
         }
         if (deviceInfo_V30.byChanNum > 0) {
             m_iStartChan = deviceInfo_V30.byStartChan;
@@ -704,6 +704,15 @@ public class CameraManager {
         } else {
             Log.e(TAG, "释放SDK资源失败！");
         }
+    }
+
+    /**
+     * 关闭并退出
+     */
+    public void onDestroy() {
+        stopPlay();
+        logoutDevice();
+        freeSDK();
     }
 
     //预置点操作
