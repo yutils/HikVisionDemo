@@ -1,12 +1,8 @@
 package com.xx.hikvisiondemo;
 
-import static android.os.Environment.MEDIA_MOUNTED;
-
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.os.Environment;
 
 import androidx.databinding.DataBindingUtil;
 
@@ -40,15 +36,15 @@ public class My1Activity extends Activity {
         //启动
         cameraManager.initAll(this, cameraDevice, binding.surfaceView);
 
-//        //拍照
+//        //拍照存文件
 //        binding.btTake.setOnClickListener(v -> {
 //            long time = System.currentTimeMillis();
-//            String path = getFilePath(getApplicationContext()) + "/" + "a.jpg";
+//            String path = getApplicationContext().getFilesDir().getPath() + "/" + "a.jpg";
 //            boolean success = cameraManager.takePicture(path);
-//            Toast.makeText(getApplication(), "拍照:" + success + "\n路径:" + path + "\n耗时：" + (System.currentTimeMillis() - time), Toast.LENGTH_LONG).show();
+//            YToast.show(getApplication(), "拍照:" + success + "\n路径:" + path + "\n耗时：" + (System.currentTimeMillis() - time));
 //        });
 
-        //拍照
+        //拍照获取Bitmap
         binding.btTake.setOnClickListener(v -> {
             //拍照监听
             long time = System.currentTimeMillis();
@@ -57,21 +53,6 @@ public class My1Activity extends Activity {
             YImageDialog.show(bitmap);
             YToast.show("分辨率:" + bitmap.getWidth() + "*" + bitmap.getHeight() + "\n耗时：" + (System.currentTimeMillis() - time));
         });
-    }
-
-
-    public static String getFilePath(Context context) {
-        String directoryPath;
-        if (MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {//判断外部存储是否可用
-            try {
-                directoryPath = context.getExternalFilesDir("").getAbsolutePath();
-            } catch (Exception e) {
-                directoryPath = context.getFilesDir().getPath();
-            }
-        } else {//没外部存储就使用内部存储
-            directoryPath = context.getFilesDir().getPath();
-        }
-        return directoryPath;
     }
 
     @Override
