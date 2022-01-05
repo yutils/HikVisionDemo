@@ -40,7 +40,6 @@ public class My1Activity extends Activity {
         //启动
         cameraManager.initAll(this, cameraDevice, binding.surfaceView);
 
-
 //        //拍照
 //        binding.btTake.setOnClickListener(v -> {
 //            long time = System.currentTimeMillis();
