@@ -3,6 +3,8 @@ package com.hikvision;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
 import android.os.SystemClock;
 import android.util.Log;
@@ -11,7 +13,9 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.hikvision.netsdk.HCNetSDK;
+import com.hikvision.netsdk.INT_PTR;
 import com.hikvision.netsdk.NET_DVR_DEVICEINFO_V30;
+import com.hikvision.netsdk.NET_DVR_JPEGPARA;
 import com.hikvision.netsdk.NET_DVR_PREVIEWINFO;
 import com.hikvision.netsdk.PTZCommand;
 import com.hikvision.netsdk.PTZPresetCmd;
@@ -19,6 +23,8 @@ import com.hikvision.netsdk.RealPlayCallBack;
 
 import org.MediaPlayer.PlayM4.Player;
 import org.MediaPlayer.PlayM4.PlayerCallBack;
+
+import java.util.Arrays;
 
 /**
  * Created by JJT-ssd on 2016/9/23.
@@ -133,6 +139,7 @@ public class CameraManager {
         System.out.println("通道个数=" + deviceInfo_V30.byChanNum);
         System.out.println("设备类型=" + deviceInfo_V30.byDVRType);
         System.out.println("ip通道个数=" + deviceInfo_V30.byIPChanNum);
+        System.out.println("通道号=" + device.getChannel());
 
         if (m_iLogID < 0) {
             int errorCode = HCNetSDK.getInstance().NET_DVR_GetLastError();
@@ -179,6 +186,42 @@ public class CameraManager {
         }
     };
 
+    //拍照
+    public boolean takePicture(String path) {
+        if (m_iLogID >= 0) {
+            NET_DVR_JPEGPARA jpegPara = new NET_DVR_JPEGPARA();
+            jpegPara.wPicSize = 9;
+            jpegPara.wPicQuality = 0;
+            return HCNetSDK.getInstance().NET_DVR_CaptureJPEGPicture(m_iLogID, device.getChannel(), jpegPara, path);
+        }
+        return false;
+    }
+
+    //拍照
+    public Bitmap takePicture() {
+        if (m_iLogID >= 0) {
+            NET_DVR_JPEGPARA jpegPara = new NET_DVR_JPEGPARA();
+            jpegPara.wPicSize = 9;
+            jpegPara.wPicQuality = 0;
+
+            //接收照片的数组
+            byte[] bytes = new byte[1024 * 1024 * 10];
+            //返回的数据长度
+            INT_PTR ip = new INT_PTR();
+            boolean success = HCNetSDK.getInstance().NET_DVR_CaptureJPEGPicture_NEW(m_iLogID, device.getChannel(), jpegPara, bytes, bytes.length, ip);
+            if (success) {
+                byte[] newBytes = Arrays.copyOf(bytes, ip.iValue);
+                return byteToBitmap(newBytes);
+            }
+        }
+        return null;
+    }
+
+    public Bitmap byteToBitmap(byte[] b) {
+        return BitmapFactory.decodeByteArray(b, 0, b.length);
+    }
+
+
     //preSetPosition为预设点 取1为预设点1 取2为预设点2
     public synchronized void realPlay(int preSetPosition) {
         try {
@@ -213,13 +256,11 @@ public class CameraManager {
                 // 多播地址，需要多播预览时配置
 //                ClientInfo.sMultiCastIP = "";
 
-                m_iPlayID = HCNetSDK.getInstance().NET_DVR_RealPlay_V40(
-                        m_iLogID, ClientInfo, getRealPlayerCallBack());
+                m_iPlayID = HCNetSDK.getInstance().NET_DVR_RealPlay_V40(m_iLogID, ClientInfo, getRealPlayerCallBack());
 
                 if (m_iPlayID < 0) {
                     while (true) {
-                        m_iPlayID = HCNetSDK.getInstance().NET_DVR_RealPlay_V40(
-                                m_iLogID, ClientInfo, getRealPlayerCallBack());
+                        m_iPlayID = HCNetSDK.getInstance().NET_DVR_RealPlay_V40(m_iLogID, ClientInfo, getRealPlayerCallBack());
                         if (m_iPlayID < 0) {
                             SystemClock.sleep(1000);
                         } else {
@@ -300,8 +341,7 @@ public class CameraManager {
      * @author zhuzhenlei
      * @brief process real data
      */
-    public void processRealData(int iPlayViewNo, int iDataType,
-                                byte[] pDataBuffer, int iDataSize, int iStreamMode) {
+    public void processRealData(int iPlayViewNo, int iDataType, byte[] pDataBuffer, int iDataSize, int iStreamMode) {
         if (HCNetSDK.NET_DVR_SYSHEAD == iDataType) {
             if (m_iPort >= 0) {
                 return;
@@ -314,26 +354,22 @@ public class CameraManager {
             }
             Log.i(TAG, "getPort succ with: " + m_iPort);
             if (iDataSize > 0) {
-                if (!Player.getInstance().setStreamOpenMode(m_iPort,
-                        iStreamMode)) // set stream mode
+                if (!Player.getInstance().setStreamOpenMode(m_iPort, iStreamMode)) // set stream mode
                 {
                     Log.e(TAG, "setStreamOpenMode failed");
                     return;
                 }
-                if (!Player.getInstance().openStream(m_iPort, pDataBuffer,
-                        iDataSize, 2 * 1024 * 1024)) // open stream
+                if (!Player.getInstance().openStream(m_iPort, pDataBuffer, iDataSize, 2 * 1024 * 1024)) // open stream
                 {
                     Log.e(TAG, "openStream failed");
                     return;
                 }
-                if (!Player.getInstance().play(m_iPort,
-                        holder)) {
+                if (!Player.getInstance().play(m_iPort, holder)) {
                     Log.e(TAG, "play failed");
                     return;
                 }
                 if (!Player.getInstance().playSound(m_iPort)) {
-                    Log.e(TAG, "playSound failed with error code:"
-                            + Player.getInstance().getLastError(m_iPort));
+                    Log.e(TAG, "playSound failed with error code:" + Player.getInstance().getLastError(m_iPort));
                     return;
                 }
             }
@@ -343,8 +379,7 @@ public class CameraManager {
                 // Log.e(TAG, "inputData failed with: " +
                 // Player.getInstance().getLastError(m_iPort));
                 for (int i = 0; i < 4000 && m_iPlayID >= 0; i++) {
-                    if (Player.getInstance().inputData(m_iPort,
-                            pDataBuffer, iDataSize)) {
+                    if (Player.getInstance().inputData(m_iPort, pDataBuffer, iDataSize)) {
                         break;
                     }
                     if (i % 100 == 0) {

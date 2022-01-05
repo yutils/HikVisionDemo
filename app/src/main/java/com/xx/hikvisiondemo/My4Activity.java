@@ -25,10 +25,10 @@ public class My4Activity extends Activity {
         super.onCreate(savedInstanceState);
         My4Binding binding = DataBindingUtil.setContentView(this, R.layout.my4);
         //设置摄像头参数
-        CameraDevice cameraDevice1 = new CameraDevice("192.168.1.65", 8000, "admin", "pw&123456", 1);
-        CameraDevice cameraDevice2 = new CameraDevice("192.168.1.66", 8000, "admin", "pw&123456", 1);
-        CameraDevice cameraDevice3 = new CameraDevice("192.168.1.65", 8000, "admin", "pw&123456", 1);
-        CameraDevice cameraDevice4 = new CameraDevice("192.168.1.66", 8000, "admin", "pw&123456", 1);
+        CameraDevice cameraDevice1 =  null;// new CameraDevice("192.168.1.65", 8000, "admin", "pw&123456", 1);
+        CameraDevice cameraDevice2 =  null;//new CameraDevice("192.168.1.66", 8000, "admin", "pw&123456", 1);
+        CameraDevice cameraDevice3 =  null;//new CameraDevice("192.168.1.65", 8000, "admin", "pw&123456", 1);
+        CameraDevice cameraDevice4 =  null;//new CameraDevice("192.168.1.66", 8000, "admin", "pw&123456", 1);
         //如果有传过来的数据。就播放传递过来的数据
         CameraDevice[] cameraDevices = (CameraDevice[]) getIntent().getSerializableExtra("data");
         if (cameraDevices.length >= 4) {

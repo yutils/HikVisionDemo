@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 
+import com.yujing.utils.YUtils;
+
 
 /**
  * 存储app全局数据，实现全局共享数据
@@ -17,6 +19,7 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        YUtils.init(this);
         //获取数据初始设置
         preferences = getSharedPreferences("preferences", MODE_PRIVATE);
         editor = preferences.edit();
