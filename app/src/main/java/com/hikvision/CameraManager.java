@@ -17,13 +17,16 @@ import com.hikvision.netsdk.INT_PTR;
 import com.hikvision.netsdk.NET_DVR_DEVICEINFO_V30;
 import com.hikvision.netsdk.NET_DVR_JPEGPARA;
 import com.hikvision.netsdk.NET_DVR_PREVIEWINFO;
+import com.hikvision.netsdk.NET_DVR_SHOWSTRING_V30;
 import com.hikvision.netsdk.PTZCommand;
 import com.hikvision.netsdk.PTZPresetCmd;
 import com.hikvision.netsdk.RealPlayCallBack;
+import com.yujing.utils.YLog;
 
 import org.MediaPlayer.PlayM4.Player;
 import org.MediaPlayer.PlayM4.PlayerCallBack;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 /**
@@ -186,7 +189,7 @@ public class CameraManager {
         }
     };
 
-    //拍照
+    //拍照并储存
     public boolean takePicture(String path) {
         if (m_iLogID >= 0) {
             NET_DVR_JPEGPARA jpegPara = new NET_DVR_JPEGPARA();
@@ -217,10 +220,41 @@ public class CameraManager {
         return null;
     }
 
+
     public Bitmap byteToBitmap(byte[] b) {
         return BitmapFactory.decodeByteArray(b, 0, b.length);
     }
 
+    //字符叠加参数
+    public void showString(String string) {
+    /*
+    函数： public boolean NET_DVR_GetDVRConfig(int lUserID, int dwCommand, int lChannel, NET_DVR_CONFIGDVRConfig)
+    参数： [in] lUserID          NET_DVR_Login_V30的返回值
+        [in] dwCommand          设备配置命令，详见 表 3 10
+        [in] lChannel           通道号
+        [out] DVRConfig         配置信息，不同的配置功能对应不同的 子
+     */
+//        //获取叠加字符
+//        NET_DVR_SHOWSTRING_V30 showString = new NET_DVR_SHOWSTRING_V30();
+//        boolean success = HCNetSDK.getInstance().NET_DVR_GetDVRConfig(m_iLogID, HCNetSDK.NET_DVR_GET_SHOWSTRING_V30, device.getChannel(), showString);
+//        if (success) {
+//            YLog.i("获取到字符叠加参数");
+//            for (NET_DVR_SHOWSTRINGINFO item : showString.struStringInfo) {
+//                YLog.i("旧的字符" + (new String(item.sString, Charset.forName("GB18030"))));
+//            }
+//        }
+        NET_DVR_SHOWSTRING_V30 showString = new NET_DVR_SHOWSTRING_V30();
+        showString.struStringInfo[0].wShowString = 1;//1显示0不显示
+        showString.struStringInfo[0].wStringSize = 40;
+        showString.struStringInfo[0].wShowStringTopLeftX = 20;//x位置
+        showString.struStringInfo[0].wShowStringTopLeftY = 50;//y位置
+        showString.struStringInfo[0].sString = Arrays.copyOf(string.getBytes(Charset.forName("GB18030")), 44);
+
+        boolean success = HCNetSDK.getInstance().NET_DVR_SetDVRConfig(m_iLogID, HCNetSDK.NET_DVR_SET_SHOWSTRING_V30, device.getChannel(), showString);
+        if (success) {
+            YLog.i("叠加成功");
+        }
+    }
 
     //preSetPosition为预设点 取1为预设点1 取2为预设点2
     public synchronized void realPlay(int preSetPosition) {
@@ -269,6 +303,7 @@ public class CameraManager {
                             break;
                         }
                     }
+
                     if (m_iPlayID < 0) {
                         Log.e(TAG, "实时播放失败！"
                                 + getErrorMsg(HCNetSDK.getInstance()

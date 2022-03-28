@@ -53,6 +53,16 @@ public class My1Activity extends Activity {
             YImageDialog.show(bitmap);
             YToast.show("分辨率:" + bitmap.getWidth() + "*" + bitmap.getHeight() + "\n耗时：" + (System.currentTimeMillis() - time));
         });
+
+        //叠加文字
+        binding.btAddString.setOnClickListener(v -> {
+            cameraManager.showString("哈哈哈，测试成功");
+        });
+
+        //清除文字
+        binding.btClearString.setOnClickListener(v -> {
+            cameraManager.showString("");
+        });
     }
 
     @Override
