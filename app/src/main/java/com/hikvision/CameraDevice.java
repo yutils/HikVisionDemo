@@ -3,6 +3,7 @@ package com.hikvision;
 import java.io.Serializable;
 
 /**
+ * 海康威视
  * 设备实体类
  */
 public class CameraDevice implements Serializable {
@@ -26,6 +27,22 @@ public class CameraDevice implements Serializable {
      * 通道号：0 主码流，1子码流, 2三码流
      */
     private int channel;
+
+    public CameraDevice(String ip, int port, String userName, String passWord) {
+        this.ip = ip;
+        this.port = port;
+        this.userName = userName;
+        this.passWord = passWord;
+        this.channel = 1;
+    }
+
+    public CameraDevice(String ip, int port, String userName, String passWord, int channel) {
+        this.ip = ip;
+        this.port = port;
+        this.userName = userName;
+        this.passWord = passWord;
+        this.channel = channel;
+    }
 
     public String getIp() {
         return ip;
@@ -67,25 +84,14 @@ public class CameraDevice implements Serializable {
         this.channel = channel;
     }
 
-    public CameraDevice() {
-    }
-
-    public CameraDevice(String ip, int port, String userName, String passWord, int channel) {
-        this.ip = ip;
-        this.port = port;
-        this.userName = userName;
-        this.passWord = passWord;
-        this.channel = channel;
-    }
-
     @Override
     public String toString() {
-        return "CameraDevice{" +
+        return "海康威视摄像头{" +
                 "ip='" + ip + '\'' +
                 ", port=" + port +
-                ", userName='" + userName + '\'' +
-                ", passWord='" + passWord + '\'' +
-                ", channel=" + channel +
+                ", 用户='" + userName + '\'' +
+                ", 密码='" + passWord + '\'' +
+                ", 通道号=" + channel +
                 '}';
     }
 }

@@ -36,13 +36,8 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.aar','*.jar'])
     implementation fileTree(dir: 'libs/hikvision', include: ['*.aar','*.jar'])
-
-//    androidTestCompile('androidx.test.espresso:espresso-core:3.4.0', {
-//        exclude group: 'com.android.support', module: 'support-annotations'
-//    })
     implementation 'androidx.appcompat:appcompat:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
     testImplementation 'junit:junit:4.13.2'
-
     implementation 'com.kotlinx:yutils:1.8.1'
 }

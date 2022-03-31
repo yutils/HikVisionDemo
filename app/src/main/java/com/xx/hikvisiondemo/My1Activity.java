@@ -11,6 +11,7 @@ import com.hikvision.CameraManager;
 import com.xx.hikvisiondemo.databinding.My1Binding;
 import com.yujing.utils.YImageDialog;
 import com.yujing.utils.YToast;
+import com.yujing.utils.YTts;
 
 /**
  * 封装调用
@@ -19,6 +20,7 @@ import com.yujing.utils.YToast;
  * @author yujing 2021年4月23日15:19:26
  */
 public class My1Activity extends Activity {
+    //海康威视摄像头管理类
     CameraManager cameraManager = new CameraManager();
 
     @Override
@@ -29,9 +31,7 @@ public class My1Activity extends Activity {
         CameraDevice cameraDevice = null;//= new CameraDevice("192.168.1.67", 8000, "admin", "pw&123456", 0);
         //如果有传过来的数据。就播放传递过来的数据
         CameraDevice[] cameraDevices = (CameraDevice[]) getIntent().getSerializableExtra("data");
-        if (cameraDevices.length >= 1) {
-            cameraDevice = cameraDevices[0];
-        }
+        if (cameraDevices.length >= 1) cameraDevice = cameraDevices[0];
 
         //启动
         cameraManager.initAll(this, cameraDevice, binding.surfaceView);
@@ -49,7 +49,11 @@ public class My1Activity extends Activity {
             //拍照监听
             long time = System.currentTimeMillis();
             Bitmap bitmap = cameraManager.takePicture();
-            if (bitmap == null) return;
+            if (bitmap == null){
+                YTts.play("拍照失败");
+                YToast.show("拍照失败");
+                return;
+            }
             YImageDialog.show(bitmap);
             YToast.show("分辨率:" + bitmap.getWidth() + "*" + bitmap.getHeight() + "\n耗时：" + (System.currentTimeMillis() - time));
         });

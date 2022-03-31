@@ -29,7 +29,7 @@ public class App extends Application {
     //设置系统初始值
     private void initValue() {
         //设置初始音量值0-15
-        AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        am.setStreamVolume(AudioManager.STREAM_MUSIC, 7, AudioManager.FLAG_PLAY_SOUND);
+        //AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        //am.setStreamVolume(AudioManager.STREAM_MUSIC, 7, AudioManager.FLAG_PLAY_SOUND);
     }
 }

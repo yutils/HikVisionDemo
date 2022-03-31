@@ -147,7 +147,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:hint="请输入账号"
-                    android:text="yujing"
+                    android:text="admin"
                     android:textColor="#DDFFDD"
                     android:textSize="18sp" />
 
@@ -157,7 +157,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:hint="请输入密码"
-                    android:text="abc123456"
+                    android:text="pw&amp;123456"
                     android:textColor="#DDFFDD"
                     android:textSize="18sp" />
 
@@ -197,7 +197,7 @@
                     android:layout_gravity="center"
                     android:layout_marginTop="5dp"
                     android:hint="请输入IP"
-                    android:text="192.168.1.65"
+                    android:text="192.168.1.68"
                     android:textColor="#DDFFDD"
                     android:textSize="18sp" />
 
@@ -218,7 +218,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:hint="请输入账号"
-                    android:text="yujing"
+                    android:text="admin"
                     android:textColor="#DDFFDD"
                     android:textSize="18sp" />
 
@@ -228,7 +228,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:hint="请输入密码"
-                    android:text="abc123456"
+                    android:text="pw&amp;123456"
                     android:textColor="#DDFFDD"
                     android:textSize="18sp" />
 
@@ -268,7 +268,7 @@
                     android:layout_gravity="center"
                     android:layout_marginTop="5dp"
                     android:hint="请输入IP"
-                    android:text="192.168.1.66"
+                    android:text="192.168.1.69"
                     android:textColor="#DDFFDD"
                     android:textSize="18sp" />
 
@@ -289,7 +289,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:hint="请输入账号"
-                    android:text="yujing"
+                    android:text="admin"
                     android:textColor="#DDFFDD"
                     android:textSize="18sp" />
 
@@ -299,7 +299,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:hint="请输入密码"
-                    android:text="abc123456"
+                    android:text="pw&amp;123456"
                     android:textColor="#DDFFDD"
                     android:textSize="18sp" />
 
