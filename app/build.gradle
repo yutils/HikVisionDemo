@@ -1,12 +1,10 @@
 apply plugin: 'com.android.application'
-
 android {
-    compileSdkVersion 31
-    buildToolsVersion "31.0.0"
+    compileSdk 32
     defaultConfig {
         applicationId "com.xx.hikvisiondemo"
-        minSdkVersion 19
-        targetSdkVersion 31
+        minSdk 19
+        targetSdk 32
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -32,12 +30,11 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 }
-
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.aar','*.jar'])
     implementation fileTree(dir: 'libs/hikvision', include: ['*.aar','*.jar'])
-    implementation 'androidx.appcompat:appcompat:1.4.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
+    implementation 'androidx.appcompat:appcompat:1.5.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     testImplementation 'junit:junit:4.13.2'
-    implementation 'com.kotlinx:yutils:1.8.1'
+    implementation 'com.kotlinx:yutils:2.1.2'
 }

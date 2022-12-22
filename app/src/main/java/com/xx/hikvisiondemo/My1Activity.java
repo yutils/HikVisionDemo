@@ -49,7 +49,8 @@ public class My1Activity extends Activity {
             //拍照监听
             long time = System.currentTimeMillis();
             Bitmap bitmap = cameraManager.takePicture();
-            if (bitmap == null){
+            //bitmap = Utils.addTextToBitmap(bitmap, "名称：张三");
+            if (bitmap == null) {
                 YTts.play("拍照失败");
                 YToast.show("拍照失败");
                 return;
