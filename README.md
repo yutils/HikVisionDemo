@@ -1,6 +1,10 @@
-# 海康威视Android studio版 直接代码中改变参数就可以是使用  
+# 海康威视Android studio版 直接代码中改变参数就可以是使用
+
+## 此项目是基于旧版SDK构建，新版SDK_demo点击前往 ：[新版本SDK_demo](https://github.com/yutils/HikVisionDemo_2023)
+
+
 在作者原版demo基础上  
-1.更新libs到海康威视最新版  
+1.更新libs到2020版  
 2.更新AndroidStudio到2022.1.1   
 3.更新gradle到7.6  
 4.升级到安卓13  
