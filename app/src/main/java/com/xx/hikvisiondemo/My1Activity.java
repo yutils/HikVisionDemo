@@ -11,7 +11,7 @@ import com.hikvision.CameraManager;
 import com.xx.hikvisiondemo.databinding.My1Binding;
 import com.yujing.utils.YImageDialog;
 import com.yujing.utils.YToast;
-import com.yujing.utils.YTts;
+import com.yujing.utils.TTS;
 
 /**
  * 封装调用
@@ -51,7 +51,7 @@ public class My1Activity extends Activity {
             Bitmap bitmap = cameraManager.takePicture();
             //bitmap = Utils.addTextToBitmap(bitmap, "名称：张三");
             if (bitmap == null) {
-                YTts.play("拍照失败");
+                TTS.speak("拍照失败");
                 YToast.show("拍照失败");
                 return;
             }
