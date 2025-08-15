@@ -30,8 +30,8 @@ C:\Users\yujing\AppData\Local\JetBrains\Toolbox\apps\AndroidStudio\ch-0\211.7628
 # 界面截图
 
 ![PS03](doc/1.png)  
-![PS03](doc/2.png)  
-![PS03](doc/3.png)  
+![PS03](doc/2.jpg)  
+![PS03](doc/3.jpg)  
 
 ## 双路播放请看  My2Activity代码
 ## 四路播放请看  My4Activity代码
